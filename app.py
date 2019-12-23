@@ -176,9 +176,9 @@ def plots_menu():
 def show_menu():
     global _controls
 
-    st.sidebar.markdown('![logo]({}) "Logo")'.format(cn.LOGO_REFERENCE))
+    st.sidebar.markdown('![logo]({}) Environmental Data Explorer'.format(cn.LOGO_REFERENCE))
     st.sidebar.header('Menu')
-    _controls['menu'] = st.sidebar.radio('', cn.menu_list, index = len(cn.menu_list) - 1, key = None) # format_func=<class 'str'>, 
+    _controls['menu'] = st.sidebar.radio('', cn.menu_list, index = 0, key = None) # format_func=<class 'str'>, 
     st.sidebar.markdown('---')
 
     if _controls['menu'] == 'Info':

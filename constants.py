@@ -13,7 +13,7 @@ LATITUDE_COLUMN = 'lat'
 VALUES_VALUE_COLUMN = 'value'
 VALUES_SAMPLENO_COLUMN = 'sample_number'
 DEFAULT_STATION = 'W0000083-1'
-LOGO_REFERENCE = 'https://github.com/lcalmbach/ede/raw/master/static/images/logo.jpg'
+LOGO_REFERENCE = 'https://github.com/lcalmbach/ede/raw/master/static/images/flask.png'
 # database settings, parameter and column mapping
 STATION_SUMMARY_TABLE_COLUMNS = ['station_name', 'aquifer_lithology', 'stratigraphy', 'well_depth', 'screen_hole', 'first_year', 'last_year', 'number_of_samples']
 STATIONS_ALL_VIEW = 'v_stations_all'
@@ -43,7 +43,7 @@ data_type_list = ['chemistry','precipitation','water levels']
 group_by_list = ['station','year','month','aquifer type']
 plot_group_by_list = ['none','station','year','month']
 months_list = ['<all>','1','2','3','4','5','6','7','8','9','10','11','12']
-menu_list = ['Plotting', 'Station information', 'Parameters information', 'Settings', 'Info']  # 'Help', 
+menu_list = ['Info','Plotting', 'Station information', 'Parameters information']  # 'Help', , 'Settings'
 color_schema = "set1" # https://vega.github.io/vega/docs/schemes/#reference
 symbol_size = 60
 google_link = r'https://drive.google.com/open?id=12WTf4bepPi9u6rtFDSMXIiBCOOzcz09p&usp=sharing'

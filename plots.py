@@ -11,11 +11,11 @@ group_by_dic = {'station':cn.STATION_NAME_COLUMN,'month':cn.MONTH_COLUMN,'year':
 
 def get_pivot_data(df, group_by):
     if group_by == 'station':
-        result = pd.pivot_table(df, values='Value', index=[cn.SAMPLE_DATE_COLUMN, cn.STATION_NAME_COLUMN, cn.MONTH_COLUMN, cn.YEAR_COLUMN], columns=[cn.PAR_NAME_COLUMN], aggfunc=np.average)
+        result = pd.pivot_table(df, values=cn.VALUES_VALUE_COLUMN, index=[cn.SAMPLE_DATE_COLUMN, cn.STATION_NAME_COLUMN, cn.MONTH_COLUMN, cn.YEAR_COLUMN], columns=[cn.PAR_NAME_COLUMN], aggfunc=np.average)
     elif group_by == cn.MONTH_COLUMN:
-        result = pd.pivot_table(df, values='Value', index=[cn.SAMPLE_DATE_COLUMN, cn.MONTH_COLUMN, cn.STATION_NAME_COLUMN,cn.YEAR_COLUMN], columns=[cn.PAR_NAME_COLUMN], aggfunc=np.average)
+        result = pd.pivot_table(df, values=cn.VALUES_VALUE_COLUMN, index=[cn.SAMPLE_DATE_COLUMN, cn.MONTH_COLUMN, cn.STATION_NAME_COLUMN,cn.YEAR_COLUMN], columns=[cn.PAR_NAME_COLUMN], aggfunc=np.average)
     else:
-        result = pd.pivot_table(df, values='Value', index=[cn.SAMPLE_DATE_COLUMN, cn.YEAR_COLUMN, ], columns=[cn.PAR_NAME_COLUMN], aggfunc=np.average)
+        result = pd.pivot_table(df, values=cn.VALUES_VALUE_COLUMN, index=[cn.SAMPLE_DATE_COLUMN, cn.YEAR_COLUMN, ], columns=[cn.PAR_NAME_COLUMN], aggfunc=np.average)
     
     return result
 
@@ -54,11 +54,11 @@ def plot_schoeller(plt_title, df, ctrl):
         ).transform_fold(
             ['petalLength', 'petalWidth', 'sepalLength', 'sepalWidth']
         ).mark_line().encode(
-            x='key:N',
-            y='value:Q',
-            color='species:N',
-            detail='index:N',
-            opacity=alt.value(0.5)
+            x = 'key:N',
+            y = cn.VALUES_VALUE_COLUMN + ':Q',
+            color = 'species:N',
+            detail = 'index:N',
+            opacity = alt.value(0.5)
         )
     return base
 
@@ -66,7 +66,7 @@ def plot_boxplot(plt_title, df, ctrl):
     result = []
     y_lab = get_label(ctrl['ypar'])
     x_lab = ''
-    df = df[(df[cn.PAR_NAME_COLUMN] == ctrl['ypar']) & (df['Value'] > 0)]
+    df = df[(df[cn.PAR_NAME_COLUMN] == ctrl['ypar']) & (df[cn.VALUES_VALUE_COLUMN] > 0)]
     
     if ctrl['max_y'] == ctrl['min_y']:
         scy = alt.Scale()
@@ -75,7 +75,7 @@ def plot_boxplot(plt_title, df, ctrl):
     
     base = alt.Chart(df, title = plt_title).mark_boxplot(clip=True).encode(
             alt.X(group_by_dic[ctrl['group_by']] + ':O', title = ctrl['group_by'].capitalize()),  #, axis=alt.Axis(labelAngle=0)
-            alt.Y('Value:Q', title = y_lab, scale = scy)
+            alt.Y(cn.VALUES_VALUE_COLUMN + ':Q', title = y_lab, scale = scy)
             )
     result.append(base)
     result.append(df)
@@ -84,8 +84,8 @@ def plot_boxplot(plt_title, df, ctrl):
 def plot_histogram(plt_title, df, ctrl):
     result = []
     x_lab = get_label(ctrl['ypar'])
-    df = df[(df[cn.PAR_NAME_COLUMN] == ctrl['ypar']) & (df['Value'] > 0)]
-    df = df[['Value']]
+    df = df[(df[cn.PAR_NAME_COLUMN] == ctrl['ypar']) & (df[cn.VALUES_VALUE_COLUMN] > 0)]
+    df = df[[cn.VALUES_VALUE_COLUMN]]
     brush = alt.selection(type='interval', encodings=['x'])
 
     if ctrl['max_x'] == ctrl['min_x']:
@@ -99,7 +99,7 @@ def plot_histogram(plt_title, df, ctrl):
         bin_def = alt.Bin()
 
     base = alt.Chart(df, title = plt_title).mark_bar().encode(
-        alt.X('Value:Q', bin = bin_def, title = x_lab, scale = scx),
+        alt.X('{}:Q'.format(cn.VALUES_VALUE_COLUMN), bin = bin_def, title = x_lab, scale = scx),
         
         y = 'count()',
     )
@@ -111,7 +111,7 @@ def plot_histogram(plt_title, df, ctrl):
 def plot_bar_h(plt_title, df, ctrl):
     result = []
     y_lab = get_label(ctrl['ypar'])
-    df = df[(df[cn.PAR_NAME_COLUMN] == ctrl['ypar']) & (df['Value'] > 0)]
+    df = df[(df[cn.PAR_NAME_COLUMN] == ctrl['ypar']) & (df[cn.VALUES_VALUE_COLUMN] > 0)]
     #brush = alt.selection(type='interval', encodings=['x'])
     if (ctrl['max_y'] == ctrl['min_y']):
         scy = alt.Scale()
@@ -120,11 +120,11 @@ def plot_bar_h(plt_title, df, ctrl):
 
     base = alt.Chart(data = df, title = plt_title).mark_bar().encode(
         alt.Y(group_by_dic[ctrl['group_by']] + ':O', title = ''),
-        alt.X('mean(Value):Q', title = y_lab, scale = scy),
+        alt.X('mean({0}):Q'.format(cn.VALUES_VALUE_COLUMN), title = y_lab, scale = scy),
     )
 
     avg = alt.Chart(df).mark_rule(color='red').encode(
-        x='mean(Value):Q'
+        x='mean({0}):Q'.format(cn.VALUES_VALUE_COLUMN)
     )
     
     result.append(base + avg)
@@ -134,7 +134,7 @@ def plot_bar_h(plt_title, df, ctrl):
 def plot_bar_v(plt_title, df, ctrl):
     result = []
     y_lab = get_label(ctrl['ypar'])
-    df = df[(df[cn.PAR_NAME_COLUMN] == ctrl['ypar']) & (df['Value'] > 0)]
+    df = df[(df[cn.PAR_NAME_COLUMN] == ctrl['ypar']) & (df[cn.VALUES_VALUE_COLUMN] > 0)]
     #brush = alt.selection(type='interval', encodings=['x'])
 
     if (ctrl['max_y'] == ctrl['min_y']):
@@ -144,11 +144,11 @@ def plot_bar_v(plt_title, df, ctrl):
     
     base = alt.Chart(data = df, title = plt_title).mark_bar().encode(
         alt.X(group_by_dic[ctrl['group_by']] + ':O', title = ''),
-        alt.Y('mean(Value):Q', title = y_lab, scale = scy),
+        alt.Y('mean({0}):Q'.format(cn.VALUES_VALUE_COLUMN), title = y_lab, scale = scy),
     )
 
     avg = alt.Chart(df).mark_rule(color='red').encode(
-        y = 'mean(Value):Q'
+        y = 'mean({0}):Q'.format(cn.VALUES_VALUE_COLUMN)
     )
     
     result.append(base + avg)
@@ -192,7 +192,7 @@ def plot_time_series(plt_title, df, ctrl):
     result = []
     x_lab = ''
     y_lab = get_label(ctrl['ypar'])
-    df = df[(df[cn.PAR_NAME_COLUMN] == ctrl['ypar']) & (df['Value'] > 0)]
+    df = df[(df[cn.PAR_NAME_COLUMN] == ctrl['ypar']) & (df[cn.VALUES_VALUE_COLUMN] > 0)]
     if ctrl['max_y'] == ctrl['min_y']:
         scy = alt.Scale()
     else:
@@ -201,14 +201,14 @@ def plot_time_series(plt_title, df, ctrl):
     base = alt.Chart(df, title = plt_title).mark_line(point = True, clip=True).encode(
         x = alt.X('SampleDate:T',
             axis=alt.Axis(title = '')),
-        y = alt.Y('Value:Q',
+        y = alt.Y('{}:Q'.format(cn.VALUES_VALUE_COLUMN),
             scale = scy,
             axis = alt.Axis(title = y_lab)
         ),
         color = alt.Color(cn.STATION_NAME_COLUMN,
             scale = alt.Scale(scheme = cn.color_schema)
         ),
-        tooltip = [cn.STATION_NAME_COLUMN, cn.SAMPLE_DATE_COLUMN, 'Value']
+        tooltip = [cn.STATION_NAME_COLUMN, cn.SAMPLE_DATE_COLUMN, cn.VALUES_VALUE_COLUMN]
         )
     result.append(base)
     result.append(df)
