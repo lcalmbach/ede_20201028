@@ -176,7 +176,7 @@ def plots_menu():
 def show_menu():
     global _controls
 
-    st.sidebar.markdown('![logo](/static/images/logo.jpg "Logo")')
+    st.sidebar.markdown('![logo]({}) "Logo")'.format(cn.LOGO_REFERENCE))
     st.sidebar.header('Menu')
     _controls['menu'] = st.sidebar.radio('', cn.menu_list, index = len(cn.menu_list) - 1, key = None) # format_func=<class 'str'>, 
     st.sidebar.markdown('---')

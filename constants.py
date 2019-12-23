@@ -13,7 +13,7 @@ LATITUDE_COLUMN = 'lat'
 VALUES_VALUE_COLUMN = 'value'
 VALUES_SAMPLENO_COLUMN = 'sample_number'
 DEFAULT_STATION = 'W0000083-1'
-
+LOGO_REFERENCE = 'https://github.com/lcalmbach/ede/raw/master/static/images/logo.jpg'
 # database settings, parameter and column mapping
 STATION_SUMMARY_TABLE_COLUMNS = ['station_name', 'aquifer_lithology', 'stratigraphy', 'well_depth', 'screen_hole', 'first_year', 'last_year', 'number_of_samples']
 STATIONS_ALL_VIEW = 'v_stations_all'
