@@ -9,17 +9,25 @@ help_content = ''
 helpfile = 'help.md'
 text_file = r"fontus_texts.txt"
 
-def init():
-    global dfTexts
-    global help_content
-    #dfTexts = pd.read_csv(cn.text_path + text_file,sep='\t', encoding = "ISO-8859-1")
-    # dfTexts.set_index("key")
-    #with open(cn.text_path + helpfile) as f:
-    #    help_content = f.read().replace('%version%', cn.version)
-    #    help_content = help_content.replace('%samples%', str(db.number_of_samples))
-    #    help_content = help_content.replace('%stations%', str(db.number_of_stations))
-    #    help_content = help_content.replace('%parameters%', str(db.number_of_parameters))
-    #    #help_content = [x.strip() for x in help_content]
+def render_about_text(data_collection_name):
+    df = db.dfData_collections
+    text = df.at[data_collection_name, 'about_text']
+    text = text.replace('%first_year%', df.at[data_collection_name, 'first_year'])
+    text = text.replace('%last_year%', df.at[data_collection_name, 'last_year'])
+    st.markdown(text)
+
+    st.markdown('### Summary of data available in the data collection:')
+    st.markdown('* Number of stations: {0}'.format(1))
+    st.markdown('* Number of parameters: {0}'.format(1))
+    st.markdown('* Number of sampling events: {0}'.format(1))
+    st.markdown('* Data last modified: {0}'.format(1))
+
+    st.markdown('### Metadata from data owner:')
+    st.markdown('* Publisher: {}'.format(df.at[data_collection_name, 'publisher'])
+    st.markdown('* Ontario Time captured: January 1, 1964 – December 31, 2016')
+    st.markdown('* Update frequency: Yearly')
+    st.markdown('* Geographical coverage: Ontario')
+    st.markdown('* Technical documentation: [Metadata Record](https://www.javacoeapp.lrc.gov.on.ca/geonetwork/srv/en/metadata.show?id=13826)')  
 
 def print_main_about(dfStations, dfParameters, dfSamples):
 #to: create a single md file for this!

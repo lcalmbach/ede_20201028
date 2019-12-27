@@ -15,6 +15,7 @@ import fontus_texts as txt
 import fontus_db as db
 import plots as plt
 import stations, parameters, samples, tools
+import data_collection as dc
 
 _controls = {}
 
@@ -24,23 +25,21 @@ def ctrl(key):
 def main():
     init()
     show_menu()
-    st.sidebar.markdown('---')
-    txt.info_sideboard('ABOUT')
+    #st.sidebar.markdown('---')
+    #txt.info_sideboard('ABOUT')
 
 def init():
     global _controls
 
     _controls = init_controls()
     db.init()
-    stations.init(db.dfStations)
-    parameters.init()
-    txt.init()
 
 # register all widgets
 def init_controls():
     result = {
         'menu': ''
-        , 'data_type': ''  #chemistry, waterlevels, precipitation
+        , 'data_collection': ''  #chemistry, waterlevels, precipitation
+        , 'dataset': ''
         , 'plot_type': ''
         , 'filter_stations_cb': True
         , 'station_list_multi': []
@@ -57,8 +56,8 @@ def init_controls():
         , 'bin_size': 0
         , 'bar_direction': ''
         , 'filter_by_year': False       #check box if you want to select a year
-        , 'filter_by_month': False      #check box if you want to select a month
-        , 'filter_month': 0             #holds selected month
+        , 'filter_by_season': False      #check box if you want to select a month
+        , 'filter_season': 0             #holds selected month
         , 'filter_year': 0              #holds selected year
         , 'plot_width' : cn.plot_width
         , 'plot_height' : cn.plot_height
@@ -66,62 +65,14 @@ def init_controls():
     }
     return result
 
-def station_menu():
-    global _controls
-
-    st.subheader(ctrl('menu'))
-    stations.init(db.dfStations)
-    parameters.init()
-    #sidebar menu
-    _controls['filter_stations_cb'] = st.sidebar.checkbox('All wells', value=False, key=None)
-    if not _controls['filter_stations_cb']:
-        _controls['station_list'] = st.sidebar.selectbox(label = cn.STATION_WIDGET_NAME, options = stations.all_stations_list) 
-    # content either html table of dataframe
-    obj = stations.get_table(ctrl('filter_stations_cb'), ctrl('station_list'))
-    #df.reset_index(inplace = True) #needed so station_name can be selected on plotly table
-    if type(obj) is str:
-        st.markdown(obj, unsafe_allow_html=True)
-        criteria = "{0} = '{1}'".format(cn.STATION_NAME_COLUMN, ctrl('station_list'))
-        text = '### {0} has {1} samples'.format(ctrl('station_list'), samples.get_number(ctrl('station_list')))
-        st.markdown('')
-        st.markdown(text)
-        st.write(samples.get_table(ctrl('station_list')))
-    else:  
-        column_values = [obj.PGMN_WELL, obj.AQUIFER_LI, obj.STRATIGRAP, obj.WELL_DEPTH, obj.SCREEN_HOL, obj.first_year, obj.last_year, obj.number_of_samples]
-        txt.show_table(obj, column_values)
-    
-    text = r'[View all wells on my google maps](https://drive.google.com/open?id=12WTf4bepPi9u6rtFDSMXIiBCOOzcz09p&usp=sharing)'
-    st.markdown(text)
-
-def parameters_menu():
-    global _controls
-
-    st.header(_controls['menu'])
-    #sidebar menu
-    _controls['filter_stations_cb'] = st.sidebar.checkbox('All wells', value=False, key=None)
-    if not ctrl('filter_stations_cb'):
-        _controls['station_list_multi'] = st.sidebar.multiselect(label = 'PGMN well', default = ('W0000083-1',), options = stations.all_stations_list) 
-    # content
-    df = parameters.get_table(ctrl('filter_stations_cb'), ctrl('station_list_multi'))
-    df = df[[cn.PAR_NAME_COLUMN, cn.PAR_LABEL_COLUMN]]
-    values = [df.ParameterName]
-    txt.show_table(df, values)
-    if not ctrl('filter_stations_cb'):
-        text = "This parameter list only includes parameters having been measured in the selected well."
-    else:
-        text = "This parameter list includes all parameters having been measured in the monitoring network."
-    st.markdown(text)
-
 def plots_menu():
     global _controls
 
-    _controls = plt.show_widgets(_controls)
+    _controls = plt.render_menu(_controls)
     if _controls['plot_group_by'] == 'none':
         criteria = tools.get_criteria_expression(_controls)
-        st.write(criteria)
-        dfStationValues = db.read_values(criteria)
-        
-        plot_results_list = plt.plot('', dfStationValues, _controls)
+        df = db.read_values(criteria)
+        plot_results_list = plt.plot('', df, _controls)
         # verify if the data has rows
         if (len(plot_results_list[1]) > 0):
             st.write(plot_results_list[0].properties(width = ctrl('plot_width'), height = ctrl('plot_height')))
@@ -129,8 +80,48 @@ def plots_menu():
                 st.dataframe(plot_results_list[1])
         else:
             st.write('Insufficient data')
+    elif _controls['plot_group_by'] == 'year':
+        pass
+    elif _controls['plot_group_by'] == 'season':
+        for season in cn.season_list:
+            criteria = "{0} = '{1}'".format(cn.SEASON_COLUMN, season)
+            df = db.read_values(criteria)
+            if ctrl('filter_month'):
+                df = dfStationValues[(df.MONTH == int(ctrl('month')))]
+            if ctrl('filter_year'):
+                df = df[(df.YEAR == int(ctrl('year')))]
+            plot_title = season
+
+            plot_results_list = plt.plot(plot_title, df, _controls)
+            # verify if the data has rows
+            if (len(plot_results_list[1]) > 0):
+                st.write(plot_results_list[0].properties(width = ctrl('plot_width'), height = ctrl('plot_height')))
+                if ctrl('show_data'):
+                    st.dataframe(plot_results_list[1])
+            else:
+                st.write('Insufficient data for: ' + plot_title)
+    elif _controls['plot_group_by'] == 'aquifer type':
+        for group in stations.get_aquifer_types():
+            criteria = "{0} = '{1}'".format(cn.AQUIFER_TYPE_COLUMN, group)
+            df = db.read_values(criteria)
+
+            plot_results_list = plt.plot(plot_title, df, _controls)
+            # verify if the data has rows
+            if (len(plot_results_list[1]) > 0):
+                st.write(plot_results_list[0].properties(width = ctrl('plot_width'), height = ctrl('plot_height')))
+                if ctrl('show_data'):
+                    st.dataframe(plot_results_list[1])
+            else:
+                st.write('Insufficient data for: ' + plot_title)
     elif _controls['group_by'] == 'station' or _controls['plot_type'] == 'time series':
-        for station in ctrl('station_list_multi'):
+        # if a station filter is set, then loop through these stations otherwise loop through all stations
+        list_of_stations = []
+        if not ctrl('filter_stations_cb'):
+            list_of_stations = stations.all_stations_list
+        else:
+            list_of_stations = ctrl('station_list_multi')
+
+        for station in list_of_stations:
             criteria = "{0} = '{1}'".format(cn.STATION_NAME_COLUMN, station)
             dfStationValues = db.read_values(criteria)
             if ctrl('filter_month'):
@@ -146,10 +137,10 @@ def plots_menu():
                 st.write(plot_results_list[0].properties(width = ctrl('plot_width'), height = ctrl('plot_height')))
                 # if a station has been selected display a link to visit site on google maps
                 if not show_all_stations and len(_controls['station_list_multi']) == 1:
-                    db.dfStations.set_index('PGMN_WELL', inplace = True)
-                    lat = db.dfStations.at[_controls['station'],'lat']
-                    lon = db.dfStations.at[_controls['station'],'lon']
-                    loc = db.dfStations.at[_controls['station'],'LOCATION']
+                    stations.dfStations.set_index(cn.STATION_NAME_COLUMN, inplace = True)
+                    lat = stations.dfStations.at[_controls['station'],'lat']
+                    lon = stations.dfStations.at[_controls['station'],'lon']
+                    loc = stations.dfStations.at[_controls['station'],'LOCATION']
                     lnk = 'Location: {0}. [Visit station on GOOGLE maps](https://www.google.com/maps/search/?api=1&query={1},{2} "open in GOOGLE maps")'.format(loc, lat, lon)
                     st.markdown(lnk)
                 if ctrl('show_data'):
@@ -159,11 +150,11 @@ def plots_menu():
     else:
         show_all_stations = True
         plot_title = 'Map'
-        df = db.dfStations
+        df = stations.dfStations
         if len(ctrl('station_list_multi')) == 1:
             pass
         elif len(ctrl('station_list_multi')) > 1:
-            df = db.dfStations[(db.dfStations[cn.STATION_NAME_COLUMN].isin(ctrl('station_list_multi')))]
+            df = stations.dfStations[(stations.dfStations[cn.STATION_NAME_COLUMN].isin(ctrl('station_list_multi')))]
             if not show_all_stations:
                 df = df[(df[cn.STATION_NAME_COLUMN] == ctrl('station'))]
         
@@ -176,19 +167,29 @@ def plots_menu():
 def show_menu():
     global _controls
 
-    st.sidebar.markdown('![logo]({}) Environmental Data Explorer'.format(cn.LOGO_REFERENCE))
+    st.sidebar.markdown('![logo]({}) <b>Environmental Data Explorer</b>'.format(cn.LOGO_REFERENCE), unsafe_allow_html=True)
+    _controls['data_collection'] = st.sidebar.selectbox('Data collection', db.DATA_COLLECTION_LIST)
+    dsl = db.get_dataset_list(_controls['data_collection'])
+    if len(dsl) > 1:
+        _controls['dataset'] = st.sidebar.selectbox('Dataset', dsl)
+    else:
+        _controls['dataset'] = dsl[0]
+    db.set_dataset_id(_controls['dataset'])
+    # now that the dataset id is set init station and parameter lists
+    parameters.init()
+    stations.init()
+    
     st.sidebar.header('Menu')
     _controls['menu'] = st.sidebar.radio('', cn.menu_list, index = 0, key = None) # format_func=<class 'str'>, 
     st.sidebar.markdown('---')
-
     if _controls['menu'] == 'Info':
-        txt.print_main_about(db.dfStations, db.dfParameters, db.dfSamples)
+        dc.render_about_text(_controls['data_collection'])
     elif _controls['menu'] == 'Help':
         txt.print_help()
     elif _controls['menu'] == 'Station information':
-        station_menu()
+        stations.render_menu(_controls)
     elif _controls['menu'] == 'Parameters information':
-        parameters_menu()
+        parameters.render_menu(_controls)
     elif _controls['menu'] == 'Plotting':
         plots_menu()
 

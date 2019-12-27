@@ -20,10 +20,10 @@ def get_pivot_data(df, group_by):
     return result
 
 # returns the label for a given parameter key. 
-def get_label(value):
-    df = db.dfParameters[(db.dfParameters[cn.PAR_NAME_COLUMN] == value)]
-    df = df.set_index(cn.PAR_NAME_COLUMN, drop = False)
-    return  df.at[value, cn.PAR_LABEL_COLUMN]
+def get_label(par_name):
+    df = parameters.dfParameters[(parameters.dfParameters[cn.PAR_LABEL_COLUMN] == par_name)]
+    df = parameters.dfParameters.set_index(cn.PAR_NAME_COLUMN)
+    return  df.at[par_name, cn.PAR_LABEL_COLUMN]
 
 def plot(plt_title, df, ctrl):
     if (ctrl['plot_type']  == 'scatter plot'):
@@ -66,7 +66,7 @@ def plot_boxplot(plt_title, df, ctrl):
     result = []
     y_lab = get_label(ctrl['ypar'])
     x_lab = ''
-    df = df[(df[cn.PAR_NAME_COLUMN] == ctrl['ypar']) & (df[cn.VALUES_VALUE_COLUMN] > 0)]
+    #df = df[(df[cn.PAR_NAME_COLUMN] == ctrl['ypar']) & (df[cn.VALUES_VALUE_COLUMN] > 0)]
     
     if ctrl['max_y'] == ctrl['min_y']:
         scy = alt.Scale()
@@ -85,7 +85,11 @@ def plot_histogram(plt_title, df, ctrl):
     result = []
     x_lab = get_label(ctrl['ypar'])
     df = df[(df[cn.PAR_NAME_COLUMN] == ctrl['ypar']) & (df[cn.VALUES_VALUE_COLUMN] > 0)]
-    df = df[[cn.VALUES_VALUE_COLUMN]]
+
+    if ctrl['group_by'] == 'none':
+        df = df[[cn.VALUES_VALUE_COLUMN, cn.STATION_NAME_COLUMN]]
+    else:
+        df = df[[cn.VALUES_VALUE_COLUMN, ctrl['group_by']]]
     brush = alt.selection(type='interval', encodings=['x'])
 
     if ctrl['max_x'] == ctrl['min_x']:
@@ -98,12 +102,17 @@ def plot_histogram(plt_title, df, ctrl):
     else:
         bin_def = alt.Bin()
 
-    base = alt.Chart(df, title = plt_title).mark_bar().encode(
-        alt.X('{}:Q'.format(cn.VALUES_VALUE_COLUMN), bin = bin_def, title = x_lab, scale = scx),
-        
-        y = 'count()',
-    )
-    
+    if ctrl['group_by'] == 'none':
+        base = alt.Chart(df, title = plt_title).mark_bar(clip = True).encode(
+            alt.X('{}:Q'.format(cn.VALUES_VALUE_COLUMN), bin = bin_def, title = x_lab, scale = scx),
+            alt.Y('count()', stack = None),
+        )
+    else:
+        base = alt.Chart(df, title = plt_title).mark_bar(opacity = cn.OPACITY,clip = True).encode(
+            alt.X('{}:Q'.format(cn.VALUES_VALUE_COLUMN), bin = bin_def, title = x_lab, scale = scx),
+            alt.Y('count()', stack = None),
+            alt.Color(ctrl['group_by'])
+        )
     result.append(base)
     result.append(df)
     return result
@@ -111,7 +120,7 @@ def plot_histogram(plt_title, df, ctrl):
 def plot_bar_h(plt_title, df, ctrl):
     result = []
     y_lab = get_label(ctrl['ypar'])
-    df = df[(df[cn.PAR_NAME_COLUMN] == ctrl['ypar']) & (df[cn.VALUES_VALUE_COLUMN] > 0)]
+    #df = df[(df[cn.PAR_NAME_COLUMN] == ctrl['ypar']) & (df[cn.VALUES_VALUE_COLUMN] > 0)]
     #brush = alt.selection(type='interval', encodings=['x'])
     if (ctrl['max_y'] == ctrl['min_y']):
         scy = alt.Scale()
@@ -134,9 +143,8 @@ def plot_bar_h(plt_title, df, ctrl):
 def plot_bar_v(plt_title, df, ctrl):
     result = []
     y_lab = get_label(ctrl['ypar'])
-    df = df[(df[cn.PAR_NAME_COLUMN] == ctrl['ypar']) & (df[cn.VALUES_VALUE_COLUMN] > 0)]
+    #df = df[(df[cn.PAR_NAME_COLUMN] == ctrl['ypar']) & (df[cn.VALUES_VALUE_COLUMN] > 0)]
     #brush = alt.selection(type='interval', encodings=['x'])
-
     if (ctrl['max_y'] == ctrl['min_y']):
         scy = alt.Scale()
     else:
@@ -197,9 +205,8 @@ def plot_time_series(plt_title, df, ctrl):
         scy = alt.Scale()
     else:
         scy = alt.Scale(domain=(ctrl['min_y'], ctrl['max_y']))
-
     base = alt.Chart(df, title = plt_title).mark_line(point = True, clip=True).encode(
-        x = alt.X('SampleDate:T',
+        x = alt.X('{}:T'.format(cn.SAMPLE_DATE_COLUMN),
             axis=alt.Axis(title = '')),
         y = alt.Y('{}:Q'.format(cn.VALUES_VALUE_COLUMN),
             scale = scy,
@@ -224,7 +231,7 @@ def plot_scatter(plt_title, df, ctrl):
     df = get_pivot_data(df, ctrl['group_by'])
     ok = (set([ctrl['xpar'], ctrl['ypar']]).issubset(df.columns))
 
-    #filter for non values
+    #filter for NAN values
     if ok:
         df = df[(df[ctrl['xpar']] > 0) & (df[ctrl['ypar']] > 0)]
         ok = len(df) > 0
@@ -264,23 +271,40 @@ def plot_scatter(plt_title, df, ctrl):
     result.append(df)
     return result
 
-def show_widgets(ctrl):
-    #ctrl['data_type'] = st.sidebar.selectbox('Data type', cn.data_type_list)
+'''
+returns the list of parameters that can be used to group the plot markers. none is only an option for histograms
+'''
+def get_group_by_list(plot_type):
+    if plot_type == 'histogram':
+        return cn.group_by_list
+    else:
+        return cn.group_by_list2
 
+def render_time_filter(ctrl):
+    if not ctrl['filter_by_season']:
+        ctrl['filter_by_year'] = st.sidebar.checkbox('Filter data by year', value=False, key=None)
+    if ctrl['filter_by_year']:
+        ctrl['filter_year'] = st.sidebar.slider('Year', min_value = int(db.first_year), max_value = int(db.last_year), value = int(db.first_year))
+
+    if not ctrl['filter_by_year']:
+        ctrl['filter_by_season'] = st.sidebar.checkbox('Filter data by season', value=False, key=None)
+    if ctrl['filter_by_season']:
+        ctrl['filter_season'] = st.sidebar.selectbox('Season', options = cn.season_list)
+
+def render_menu(ctrl):
     ctrl['plot_type'] = st.sidebar.selectbox('Plot type', cn.plot_type_list)
 
-    ctrl['plot_group_by'] = st.sidebar.selectbox('Plot group by', pd.Series(cn.plot_group_by_list))
+    ctrl['plot_group_by'] = st.sidebar.selectbox('Group plots by', pd.Series(cn.plot_group_by_list))
     if ctrl['plot_type'] == 'time series':
         ctrl['group_by'] = 'station'
     else:
-        ctrl['group_by'] = st.sidebar.selectbox('Markers group by', pd.Series(cn.group_by_list))
+        ctrl['group_by'] = st.sidebar.selectbox('Group markers by', get_group_by_list(ctrl['plot_type']))
 
-    parameters_list = parameters.all_parameters_list
-    if ctrl['plot_type'] not in ['time series', 'histogram', 'boxplot', 'bar chart', 'map']:
-        ctrl['xpar'] = parameters.get_parameter_key(st.sidebar.selectbox('X-parameter', parameters_list, index = 0))
+    if ctrl['plot_type'] not in ['time series', 'histogram', 'box plot', 'bar chart', 'map']:
+        ctrl['xpar'] = parameters.get_parameter_key(st.sidebar.selectbox('X-parameter', parameters.all_parameters_list, index = 0))
     
     if ctrl['plot_type'] not in ['map']:
-        ctrl['ypar'] = parameters.get_parameter_key(st.sidebar.selectbox('Y-parameter', parameters_list, index = 1))
+        ctrl['ypar'] = parameters.get_parameter_key(st.sidebar.selectbox('Y-parameter', parameters.all_parameters_list, index = 0))
     
     st.sidebar.markdown('---')
     st.sidebar.markdown('#### Filter')
@@ -291,20 +315,11 @@ def show_widgets(ctrl):
         ctrl['filter_stations_cb'] = st.sidebar.checkbox('Filter data by station', value=False, key=None)
     
     if ctrl['filter_stations_cb']:
-        ctrl['station_list_multi'] = st.sidebar.multiselect(label = cn.STATION_WIDGET_NAME, default = (cn.DEFAULT_STATION,), options = stations.all_stations_list)
+        ctrl['station_list_multi'] = st.sidebar.multiselect(label = cn.STATION_WIDGET_NAME, default = stations.all_stations_list[0], options = stations.all_stations_list)
     
     #filter for month or year, this is hidden for plot type time series
     if ctrl['plot_type'] not in ['time series']:
-        # only show year filter if no other time filter has been selected
-        if not ctrl['filter_by_year']:
-            ctrl['filter_by_month'] = st.sidebar.checkbox('Filter data by month', value = False, key=None)
-            if ctrl['filter_by_month']:
-                ctrl['filter_month'] = st.sidebar.slider(cn.MONTH_COLUMN, min_value = 1, max_value = 12, value=None)
-        # only show month filter if no other time filter has been selected
-        if not ctrl['filter_by_month']:
-            ctrl['filter_by_year'] = st.sidebar.checkbox('Filter data by year', value=False, key=None)
-            if ctrl['filter_by_year']:
-                ctrl['filter_year'] = st.sidebar.slider('Year', min_value = int(db.first_year), max_value = int(db.last_year), value = int(db.first_year)) #db.first_year, max_value = db.last_year)
+       render_time_filter(ctrl)
     
     if ctrl['plot_type'] == 'histogram':
         ctrl['bin_size'] = st.sidebar.number_input('Bin width')

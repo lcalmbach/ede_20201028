@@ -13,7 +13,6 @@ def get_table(sel_station):
     criteria = "{0} = '{1}'".format(cn.STATION_NAME_COLUMN, sel_station)
     result = db.read_values(criteria)
     result = get_pivot_data(result)
-    
     return result
 
 def get_number(station_name):
