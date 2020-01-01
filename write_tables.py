@@ -4,11 +4,10 @@ import pymysql
 import pandas as pd
 import constants as cn
 
-
 def file2table(): # table_name, filename
-    table_name = 'pgmn_precipitation'
-    filename = r'static/data/precipitation.txt'
-
+    table_name = 'pwqmn_stations'
+    #filename = r'static/data/pwqmn_stations.txt'
+    filename = r'E:\develop\pwqmn\static\data\pwqmn_stations.txt'
     dataFrame = pd.read_csv(filename, sep='\t', encoding = "ISO-8859-1",)
     
     DB_USER = 'root'

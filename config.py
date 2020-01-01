@@ -52,6 +52,7 @@ google_link = r'https://drive.google.com/open?id=12WTf4bepPi9u6rtFDSMXIiBCOOzcz0
 
 STATION_WIDGET_NAME = 'Station'
 
-options = ("m", "f")
+DEFAULT_DATA_COLLECTION_ID = 1 # pgmn
+DATA_COLLECTION_NAME_COLUMN = 'name_long'
+DATASET_NAME_COLUMN = 'name'
 
-display = {'m': "male",'f': "female"}

@@ -1,8 +1,8 @@
 import streamlit as st
 
-display = ("male", "female")
+options = (8, 9)
 
-options = [0,1]
+display = {8: 'male', 9: 'female'}
 
 value = st.selectbox("gender", options, format_func=lambda x: display[x])
 

@@ -13,7 +13,7 @@ def init():
     global all_parameters_list
 
     dfParameters = get_parameters()
-    all_parameters_list = dfParameters[cn.PAR_LABEL_COLUMN].tolist()
+    all_parameters_list = dfParameters[cn.PAR_NAME_COLUMN].tolist()
 
 def get_parameters():
     query =  "select * from v_parameters_all where dataset_id = {0} order by {1}".format(db.DATASET_ID, cn.PAR_LABEL_COLUMN)
@@ -33,11 +33,6 @@ def get_table(use_all_stations, sel_stations_list):
         query = "select * from v_parameters_all where {0} in (select distinct {0} from envdata.values where dataset_id = {1} and station_name in ({2})) and dataset_id = {1}".format(cn.PAR_NAME_COLUMN, db.DATASET_ID, stations)
         result = db.execute_query(query)
     return result
-
-#def get_parameters(df):
-#    result = df.PARM_DESCRIPTION.unique()
-#    result.sort('PAR_DESCRIPTION')
-#    return result
 
 def get_sample_parameters(station_name):
     # filter samples to include only samples listed in the rivers-selection
@@ -64,6 +59,7 @@ def render_menu(ctrl):
     if not ctrl['filter_stations_cb']:
         ctrl['station_list_multi'] = st.sidebar.multiselect(label = cn.STATION_WIDGET_NAME, default = stations.all_stations_list[0], options = stations.all_stations_list) 
     # content
+    st.write(ctrl['station_list_multi'])
     df = get_table(ctrl['filter_stations_cb'], ctrl['station_list_multi'])
     df = df[[cn.PAR_NAME_COLUMN, cn.PAR_LABEL_COLUMN, cn.PAR_UNIT_COLUMN]]
     values = [df[cn.PAR_NAME_COLUMN], df[cn.PAR_LABEL_COLUMN], df[cn.PAR_UNIT_COLUMN]]

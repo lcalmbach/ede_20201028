@@ -46,20 +46,4 @@ def print_main_about(dfStations, dfParameters, dfSamples):
 def print_help():
     st.markdown(help_content, unsafe_allow_html=True)
 
-def info_sideboard(key):
-    st.sidebar.title("About")
-    text = dfTexts.loc[dfTexts.key == key, 'text'].values[0]
-    st.sidebar.info(text)
 
-def show_table(df, values):
-    fig = go.Figure(data=[go.Table(
-    header=dict(values=list(df.columns),
-                fill_color='silver',
-                line_color='darkslategray',
-                align='left'),
-    cells=dict(values=values,
-               fill_color='white',
-               line_color='darkslategray',
-               align='left'))
-    ])
-    st.write(fig)

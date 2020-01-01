@@ -17,18 +17,18 @@ def init():
 
 def get_table(use_all_stations, sel_station_list):
     global dfStations
+
     if use_all_stations:
         query = "SELECT * FROM envdata.v_stations_all where dataset_id = {0}".format(db.DATASET_ID)
         result = db.execute_query(query)
     else:
+        result = pd.DataFrame({"Field":[], "Value":[]}) 
         query = "SELECT * FROM envdata.v_stations_all where station_name = '{0}'".format(sel_station_list)
         df = db.execute_query(query)
-        result = '<table style="font-size: 0.8em"><thead><tr><th>Field</th><th>Value</th></tr></thead>'
         for key, value in df.iteritems():
-            result += '<tr><td>{0}</td><td>{1}</td><tr>'.format(key, df.iloc[-1][key])
-        result += '</table>'
-    
-    return result
+            df2 = pd.DataFrame({"Field": [key], "Value": [df.iloc[-1][key]]}) 
+            result = result.append(df2)
+    return result.set_index('Field')
 
 '''
 retrieves the list of quifer type codes used in the current dataset
@@ -49,30 +49,30 @@ def get_all_stations():
 def get_samples(criteria):
     query = "SELECT * FROM envdata.v_samples_all where {} order by {}".format(criteria, cn.SAMPLE_DATE_COLUMN)
     result = db.execute_query(query)
-    result = result[cn.STATION_NAME_COLUMN].tolist()
+    #result = result[cn.STATION_NAME_COLUMN].tolist()
     return result
 
 def render_menu(ctrl):
     st.subheader(ctrl['menu'])
     #sidebar menu
-    ctrl['filter_stations_cb'] = st.sidebar.checkbox('All stations', value=False, key=None)
+    ctrl['filter_stations_cb'] = st.sidebar.checkbox('All stations', value = False, key = None)
     if not ctrl['filter_stations_cb']:
         ctrl['station_list'] = st.sidebar.selectbox(label = cn.STATION_WIDGET_NAME, options = all_stations_list) 
     # content either html table of dataframe
-    obj = get_table(ctrl['filter_stations_cb'], ctrl['station_list'])
+    df = get_table(ctrl['filter_stations_cb'], ctrl['station_list'])
     #df.reset_index(inplace = True) #needed so station_name can be selected on plotly table
-    if type(obj) is str:
-        st.markdown(obj, unsafe_allow_html=True)
+    if not ctrl['filter_stations_cb']:
+        st.write(df)
         criteria = "{0} = '{1}' and {2} = {3}".format(cn.STATION_NAME_COLUMN, ctrl['station_list'], 'dataset_id', db.DATASET_ID)
         #show samples belonging to sample
-        dfSamples = get_samples(criteria)
-        text = '#### {0} has {1} samples'.format(ctrl['station_list'], len(dfSamples))
-        st.markdown('')
+        df = get_samples(criteria).set_index('id')
+        text = '##### {0} has {1} samples'.format(ctrl['station_list'], len(df))
         st.markdown(text)
-        st.write(samples.get_table(ctrl['station_list']))
+        st.write(df)
+        #st.write(df.set_index('Field', inplace=True))
     else:  
-        column_values = [obj[cn.STATION_NAME_COLUMN], obj.aquifer_lithology, obj.stratigraphy, obj.well_depth, obj.screen_hole, obj.first_year, obj.last_year, obj.number_of_samples]
-        #txt.show_table(obj, column_values)
+        column_values = [df[cn.STATION_NAME_COLUMN], df.aquifer_lithology, df.stratigraphy, df.well_depth, df.screen_hole, df.min_year, df.max_year, df.number_of_samples]
+        tools.show_table(df, column_values)
     
     text = r'[View all wells on my google maps](https://drive.google.com/open?id=12WTf4bepPi9u6rtFDSMXIiBCOOzcz09p&usp=sharing)'
     st.markdown(text)
