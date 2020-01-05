@@ -5,9 +5,10 @@ import pandas as pd
 import constants as cn
 
 def file2table(): # table_name, filename
-    table_name = 'pwqmn_stations'
+    table_name = 'pwqmn_chemistry'
     #filename = r'static/data/pwqmn_stations.txt'
-    filename = r'E:\develop\pwqmn\static\data\pwqmn_stations.txt'
+    #filename = r'E:\develop\pwqmn\static\data\pwqmn_stations.txt'
+    filename = r'E:\Data\Canada\Ontario\pwqmn_rawdata_2016\pwqmn_chemistry_data.txt'
     dataFrame = pd.read_csv(filename, sep='\t', encoding = "ISO-8859-1",)
     
     DB_USER = 'root'
