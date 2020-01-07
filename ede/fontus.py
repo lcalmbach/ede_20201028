@@ -199,6 +199,7 @@ class DataCollection:
         ''' Returns a data frame with all values matching the criteria'''
 
         query = "Select * from {} where {}".format(self.observations_view, criteria)
+        #st.write(query)
         result = db.execute_query(query)
         return result
 
@@ -315,6 +316,14 @@ class Stations:
         if self.__parent.has_google_maps_url():
             text = r'[View all wells on my google maps]({})'.format(self.__parent.google_maps_url)
             st.markdown(text)
+        
+    def read_values(self, criteria):
+        ''' Returns a data frame with all values matching the criteria'''
+
+        query = "Select * from v_stations where {}".format(criteria)
+        #st.write(query)
+        result = db.execute_query(query)
+        return result
 
 class Parameters:
     def __init__(self, parent):
@@ -419,31 +428,33 @@ class Charting:
     def render_menu(self):
         self.render_controls()
         criteria_base = self.get_criteria_expression()
-        if self.plot_groupby == 'none':
+        if self.__plot_groupby == 'none':
             crit = criteria_base
             tit = ''
             self.plot(title = tit, criteria = crit)
             
         elif self.__plot_groupby == 'year':
-            year_list = db.get_distinct_values(cn.YEAR_COLUMN, self.__parent.observations_view, self.__parent.dataset_id)
+            query = 'select distinct {} from v_observations where {}'.format(cn.YEAR_COLUMN, criteria_base)
+            year_list = db.execute_query(query)[cn.YEAR_COLUMN].tolist()
+            #year_list = db.get_distinct_values(cn.YEAR_COLUMN, self.__parent.observations_view, self.__parent.dataset_id)
             for group in year_list:
-                crit = criteria_base + " AND {0} = '{1}'".format(cn.YEAR_COLUMN, group)
+                crit = criteria_base + " AND {0} = {1}".format(cn.YEAR_COLUMN, group)
                 tit = str(group)
                 self.plot(title = tit, criteria = crit)
 
-        elif self.plot_groupby == 'season':
+        elif self.__plot_groupby == 'season':
             for group in cn.season_list:
                 crit = criteria_base + " AND {0} = '{1}'".format(cn.SEASON_COLUMN, group)
                 tit = group
                 self.plot(title = tit, criteria = crit)
 
-        elif self.plot_groupby == 'aquifer_type':
+        elif self.__plot_groupby == 'aquifer_type':
             for group in db.get_distinct_values(cn.AQUIFER_TYPE_COLUMN, self.__parent.observations_view, self.__parent.dataset_id):
                 crit = criteria_base + " AND {0} = '{1}'".format(cn.AQUIFER_TYPE_COLUMN, group)
                 tit = group
                 self.plot(title = tit, criteria = crit)
 
-        elif self.plot_groupby == cn.STATION_NAME_COLUMN:
+        elif self.__plot_groupby == cn.STATION_NAME_COLUMN:
             # if a station filter is set, then loop through these stations otherwise loop through all stations
             if not self.__parent.filter.filter_stations_cb:
                 list_of_stations = stations.all_stations_list
@@ -471,18 +482,19 @@ class Charting:
             crit = criteria_base
             tit = 'Map'
             self.plot(title = tit, criteria = crit)
-            df = self.__parent.stations.dfStations
-            if len(self.__parent.filter.stations_multilist_selection) == 1:
-                pass
-            elif len(self.__parent.filter.stations_multilist_selection) > 1:
-                df = stations.dfStations[(df['id'].isin(self.__parent.filter.stations_multilist_selection))]
-                df = df[(df['id'] == self.ctrl['station'])]
-            
-            if df.shape[0] > 0:
-                self.plot_map(df)
-                st.write('if map appears empty, use mouse wheel to zoom out, until markers appear.')
-            else:
-                st.write('Insufficient data')
+
+            #df = self.__parent.stations.dfStations
+            #if len(self.__parent.filter.stations_multilist_selection) == 1:
+            #    pass
+            #elif len(self.__parent.filter.stations_multilist_selection) > 1:
+            #    df = stations.dfStations[(df['id'].isin(self.__parent.filter.stations_multilist_selection))]
+            #    df = df[(df['id'] == self.ctrl['station'])]
+            # 
+            #if df.shape[0] > 0:
+            #    self.plot_map(df)
+            #    st.write('if map appears empty, use mouse wheel to zoom out, until markers appear.')
+            #else:
+            #    st.write('Insufficient data')
     
     # returns the label for a given parameter key. 
     def get_label(self, par_id):
@@ -491,7 +503,10 @@ class Charting:
         return "{} ({})".format(label, unit)
 
     def plot(self, title, criteria):
-        df = self.__parent.read_values(criteria = criteria)
+        if self.__plot_type == 'map':
+            df = self.__parent.stations.read_values(criteria = criteria)
+        else:
+            df = self.__parent.read_values(criteria = criteria)
 
         if (self.__plot_type  == 'scatter plot'):
             plot_results = self.plot_scatter(title, df)
@@ -508,13 +523,15 @@ class Charting:
         elif (self.__plot_type == 'bar chart' and self.__direction == 'vertical'):
              plot_results = self.plot_bar_v(title, df)
         elif (self.__plot_type == 'map'):
-            plot_map(title, df, ctrl)
+            self.plot_map(title, df)
             plot_results = []
         else:
             plot_results = []
         
         # verify if the result list has items
-        if (len(plot_results[1]) > 0):
+        if (self.__plot_type == 'map'):
+            pass 
+        elif (len(plot_results[1]) > 0):
             st.write(plot_results[0].properties(width = self.__plot_width, height = self.__plot_height))
             if self.__show_data_table:
                 st.dataframe(plot_results[1])
@@ -637,7 +654,7 @@ class Charting:
         result.append(df)
         return result
 
-    def plot_map(self, df): 
+    def plot_map(self, title, df): 
         #df = df[(df[cn.STATION_NAME_COLUMN] == 19006403102)]
         #df = pd.DataFrame(
         #   np.random.randn(1000, 2) / [50, 50] + [46., -80.5],
@@ -653,7 +670,7 @@ class Charting:
             viewport={
                 "latitude": midpoint[0],
                 "longitude": midpoint[1],
-                "zoom": 20,
+                "zoom": 5,
                 "pitch": 0,
             },
             layers=[
@@ -702,14 +719,16 @@ class Charting:
         result = []
 
         # remove value < 0
+        df = tools.get_pivot_data(df, self.__marker_group_by)
         df = df.reset_index()
-        df = df[(df[cn.PAR_NAME_COLUMN].isin([self.__xpar, self.__ypar]))]
-        df = get_pivot_data(df, self.__marker_group_by)
-        ok = (set([self.__xpar, self.__ypar]).issubset(df.columns))
+        # verify that both parameter exist as column names
+        x_col = self.__parent.parameters.parameters_display[self.__xpar]
+        y_col = self.__parent.parameters.parameters_display[self.__ypar]
 
+        ok = (set([x_col, y_col]).issubset(df.columns))
         #filter for NAN values
         if ok:
-            df = df[(df[self.__xpar] > 0) & (df[self.__ypar] > 0)]
+            df = df[(df[x_col] > 0) & (df[y_col] > 0)]
             ok = len(df) > 0
         if ok:
             df = df.reset_index()
@@ -727,16 +746,16 @@ class Charting:
                 scy = alt.Scale(domain=(self.__yax_min, self.__yax_max))
 
             base = alt.Chart(df, title = title).mark_circle(size = cn.symbol_size, clip = True).encode(
-                x = alt.X(self.__xpar + ':Q',
+                x = alt.X(x_col + ':Q',
                     scale = scx,
                     axis = alt.Axis(title = x_lab)),
-                y = alt.Y(self.__ypar + ':Q',
+                y = alt.Y(y_col + ':Q',
                     scale = scy,
                     axis = alt.Axis(title = y_lab)),
                     color = alt.Color('{}:O'.format(self.__marker_group_by),
                         scale=alt.Scale(scheme = cn.color_schema)
                     ),
-                tooltip=[cn.SAMPLE_DATE_COLUMN, self.__marker_group_by, self.__xpar, self.__ypar]
+                tooltip=[cn.SAMPLE_DATE_COLUMN, self.__marker_group_by, x_col, y_col]
             )
         else:
             dfEmpty = pd.DataFrame(data={'col1': [1, 2], 'col2': [3, 4]})
@@ -762,7 +781,7 @@ class Charting:
 
         self.__plot_type = st.sidebar.selectbox('Plot type', cn.plot_type_list, index = 0)
 
-        self.plot_groupby = st.sidebar.selectbox('Group plots by', cn.group_by_options, format_func=lambda x: cn.group_by_display[x])
+        self.__plot_groupby = st.sidebar.selectbox('Group plots by', cn.group_by_options, format_func=lambda x: cn.group_by_display[x])
         if self.__plot_type == 'time series':
             self.__marker_group_by = 'station'
         else:
@@ -815,7 +834,8 @@ class Charting:
             self.__plot_height = st.sidebar.number_input('Height (pixel)', value = self.__plot_height)
         
         self.__show_data_table = st.sidebar.checkbox('Show detail data', value = False, key = None)
-    
+
+
     def get_criteria_expression(self):
         '''creates the sql where clause for the set filter controls'''
 
@@ -835,8 +855,10 @@ class Charting:
                 result += " AND ({0} >= {1} AND {0} <= {2})".format(cn.YEAR_COLUMN, self.__parent.filter.year_slider[0], self.__parent.filter.year_slider[1])
         
         if self.__plot_type == 'scatter plot':
-            par_list = get_quoted_items_list([self.__xpar, self.__ypar])
-            result += " AND {} in ({})".format(cn.PAR_NAME_COLUMN, par_list)
+            par_list = tools.get_cs_item_list([self.__xpar, self.__ypar])
+            result += " AND {} in ({})".format('parameter_id', par_list)
+        elif self.__plot_type == 'map':
+            result += " AND lat is not null and lon is not null and not (lat = 0 and lon = 0)"
         else:
             result += " AND {} = {}".format('parameter_id', self.__ypar)
         
