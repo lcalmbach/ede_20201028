@@ -70,7 +70,8 @@ class DataCollection:
 
     @property
     def filter(self):
-        '''object holding all filter settings'''
+        '''Object holding all filter settings'''
+
         return self.__filter
 
     @property
@@ -98,7 +99,9 @@ class DataCollection:
             query = "SELECT min(id) as id FROM envdata.v_datasets where data_collection_id = {}".format(id)
             df = db.execute_query(query)
             self.dataset_id = df.at[0,'id']
+            self.__menu_selection = 'Info'
 
+            
     @property 
     def observations_view(self):
         return self.__observations_view
@@ -114,7 +117,6 @@ class DataCollection:
     def has_google_maps_url(self):
         return self.__google_maps_url is None
 
-
     @dataset_id.setter
     def dataset_id(self, id):
         '''sets the dataset_id and retrieves a dataframe of all datasets belonging to the current data collection'''
@@ -128,17 +130,29 @@ class DataCollection:
             self.__last_year = int(self.__dfCurr_dataset.at[id, 'last_year'])
             self.__google_maps_url = self.__dfCurr_dataset.at[id, 'google_maps_url']
             self.__has_markers = self.__dfCurr_dataset.at[id, 'has_markers']
+            self.__data_type = self.__dfCurr_dataset.at[id, 'data_type_id']
 
             self.__parameters = Parameters(self)
             self.__stations = Stations(self)
             self.__filter = Filter(self)
             self.__filter.year_slider = [self.__first_year, self.__last_year]
+            self.filter_stations_cb = True
     
     @property
     def first_year(self):
         '''Year of first sample collection'''
         return self.__first_year
     
+    
+    @property
+    def data_type(self):
+        '''Returns data type for selected dataset: 
+        1:  chemistry
+        2:  precipitation
+        3:  water levels
+        '''
+        return self.__data_type
+
     @property
     def has_markers(self):
         '''If True data points in plots will be shown as circles'''
@@ -195,11 +209,10 @@ class DataCollection:
         for ref in refs:
             st.markdown('    * {}'.format(ref), unsafe_allow_html=True)
 
-    def read_values(self, criteria):
+    def get_values(self, criteria):
         ''' Returns a data frame with all values matching the criteria'''
 
         query = "Select * from {} where {}".format(self.observations_view, criteria)
-        #st.write(query)
         result = db.execute_query(query)
         return result
 
@@ -282,8 +295,25 @@ class Stations:
     def get_samples(self, criteria):
         ''' Returns a dataframe of samples as a dataframe where column 0 is the field name and column 1 is its value'''
         
-        query = "SELECT * FROM envdata.v_samples_all where {} order by {}".format(criteria, cn.SAMPLE_DATE_COLUMN)
+        if self.__parent.data_type == cn.DataType.chemistry:
+            query = "SELECT * FROM envdata.v_samples_all where {} order by {}".format(criteria, cn.SAMPLE_DATE_COLUMN)
+            index_col = 'id'
+        else:
+            criteria = criteria.replace('station_id','t1.station_id')
+            criteria = criteria.replace('parameter_id','t1.parameter_id')
+            criteria = criteria.replace('dataset_id','t1.dataset_id')
+            query = """SELECT year(t1.value_date) as year, t2.station_name, t3.parameter_name, t3.unit,
+            MIN(t1.value) AS min_value, MAX(t1.value) AS max_value, AVG(t1.value) AS avg_value
+            FROM
+                envdata.time_series t1
+                inner join envdata.station t2 on t2.id = t1.station_id
+                inner join envdata.parameter t3 on t3.id = t1.parameter_id
+                where {} 
+                GROUP BY t1.dataset_id , t2.station_name , t3.parameter_name,t3.unit, year(t1.value_date)
+                order by {}""".format(criteria, cn.STATION_NAME_COLUMN)
+            index_col = 'station_name'
         result = db.execute_query(query)
+        result = result.set_index(index_col)
         return result
 
     def render_menu(self):
@@ -301,10 +331,12 @@ class Stations:
             criteria = "{0} = {1} and {2} = {3}".format('station_id', self.__parent.filter.stations_list_selection, 'dataset_id', self.__parent.dataset_id)
             #show samples belonging to sample
             df = self.get_samples(criteria)
-            df = df.set_index('id')
             station_name = self.stations_display[self.__parent.filter.stations_list_selection]
             number_of_samples = len(df)
-            text = '##### {0} has {1} samples'.format(station_name, number_of_samples)
+            if self.__parent.data_type == cn.DataType.chemistry:
+                text = '##### {0} has {1} samples'.format(station_name, number_of_samples)
+            else:
+                text = 'Summary of measurements at station {}'.format(station_name)
             st.markdown(text)
             st.write(df)
             #st.write(df.set_index('Field', inplace=True))
@@ -317,7 +349,7 @@ class Stations:
             text = r'[View all wells on my google maps]({})'.format(self.__parent.google_maps_url)
             st.markdown(text)
         
-    def read_values(self, criteria):
+    def get_values(self, criteria):
         ''' Returns a data frame with all values matching the criteria'''
 
         query = "Select * from v_stations where {}".format(criteria)
@@ -424,6 +456,20 @@ class Charting:
         self.__yax_max = 0
         self.__bin_size = 0
 
+    @property
+    def plot_type(self):
+        return self.__plot_type
+
+    @plot_type.setter
+    def plot_type(self, pt):
+        '''sets the plot type. For time series plots, the def sets the 
+        filter checkbox to true, so not all values from all stations are retrieved  
+        '''
+
+        self.__plot_type = pt
+        if self.__plot_type == 'time series':
+            self.__marker_group_by = 'station'
+            self.__parent.filter_stations_cb = True
 
     def render_menu(self):
         self.render_controls()
@@ -454,7 +500,7 @@ class Charting:
                 tit = group
                 self.plot(title = tit, criteria = crit)
 
-        elif self.__plot_groupby == cn.STATION_NAME_COLUMN:
+        elif self.__plot_groupby == 'station':
             # if a station filter is set, then loop through these stations otherwise loop through all stations
             if not self.__parent.filter.filter_stations_cb:
                 list_of_stations = stations.all_stations_list
@@ -504,9 +550,9 @@ class Charting:
 
     def plot(self, title, criteria):
         if self.__plot_type == 'map':
-            df = self.__parent.stations.read_values(criteria = criteria)
+            df = self.__parent.stations.get_values(criteria = criteria)
         else:
-            df = self.__parent.read_values(criteria = criteria)
+            df = self.__parent.get_values(criteria = criteria)
 
         if (self.__plot_type  == 'scatter plot'):
             plot_results = self.plot_scatter(title, df)
@@ -800,7 +846,7 @@ class Charting:
         if self.__plot_type == 'time series':
             self.__parent.filter.filter_stations_cb = True
         else:
-            self.__parent.filter.filter_stations_cb = st.sidebar.checkbox('Filter data by station', value=False, key = None)
+            self.__parent.filter.filter_stations_cb = st.sidebar.checkbox('Filter data by station', value=self.__parent.filter.filter_stations_cb, key = None)
         
         if self.__parent.filter.filter_stations_cb:
             self.__parent.filter.stations_multilist_selection = st.sidebar.multiselect(label = cn.STATION_WIDGET_NAME,

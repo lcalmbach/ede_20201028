@@ -1,5 +1,17 @@
-SQL_CONNECT_STRING =  'mysql://root:password@localhost/envdata' 
-# SQL_CONNECT_STRING: 'mysql://root:password63@terra-1.cxudpg3pe6ie.us-east-2.rds.amazonaws.com/imp'
+import socket
+from enum import Enum
+
+class DataType(Enum):
+    chemistry = 1
+    precipitation = 2
+    water_level = 3
+
+LOCAL_SERVER = 'waterloo'
+if socket.gethostname() == LOCAL_SERVER:
+    SQL_CONNECT_STRING = 'mysql://root:password@localhost/envdata'
+else:
+    SQL_CONNECT_STRING = 'mysql://root:password63@terra-1.cxudpg3pe6ie.us-east-2.rds.amazonaws.com/envdata'
+
 YEAR_COLUMN = 'year'
 MONTH_COLUMN = 'month'
 DAY_COLUMN = 'day'
@@ -14,8 +26,7 @@ LATITUDE_COLUMN = 'lat'
 VALUES_VALUE_COLUMN = 'calc_value'
 AQUIFER_TYPE_COLUMN = 'aquifer_type'
 VALUES_SAMPLENO_COLUMN = 'sample_number'
-DEFAULT_STATION = 'W0000083-1'
-LOGO_REFERENCE = 'https://github.com/lcalmbach/ede/blob/master/static/images/flask.png?raw=true'
+LOGO_REFERENCE = 'https://github.com/lcalmbach/ede/blob/master/ede/static/images/flask.png?raw=true'
 # database settings, parameter and column mapping
 STATION_SUMMARY_TABLE_COLUMNS = ['station_name', 'aquifer_lithology', 'stratigraphy', 'well_depth', 'screen_hole', 'first_year', 'last_year', 'number_of_samples']
 STATIONS_ALL_VIEW = 'v_stations_all'
