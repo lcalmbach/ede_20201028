@@ -6,6 +6,7 @@ import numpy as np
 import database as db
 import locale
 import altair as alt
+import pyperclip as clipboard
 
 class Filter:
     ''' This class holds all filter control 
@@ -22,14 +23,19 @@ class Filter:
     def __init__(self, parent):
         self.__parent = parent
         self.filter_stations_cb = True
+        self.filter_parameters_cb = False
         self.stations_list_selection = 0
         self.stations_multilist_selection = []
+        self.parameters_multilist_selection = []
         self.filter_by_year_cb = False
         self.year_slider = []
         self.filter_by_season_cb = False
         self.season_list_selection = 0
         self.filter_parameter_groups_cb = False
         self.parameters_multilist_selection = []
+        self.__station_main_display_view = ''
+        self.__station_samples_display_view = ''
+        self.__station_years_display_view = ''
 
 class DataCollection:
     '''
@@ -101,7 +107,7 @@ class DataCollection:
             self.dataset_id = df.at[0,'id']
             self.__menu_selection = 'Info'
 
-            
+
     @property 
     def observations_view(self):
         return self.__observations_view
@@ -115,7 +121,7 @@ class DataCollection:
         return self.__google_maps_url
     
     def has_google_maps_url(self):
-        return self.__google_maps_url is None
+        return self.__google_maps_url > ''
 
     @dataset_id.setter
     def dataset_id(self, id):
@@ -131,6 +137,9 @@ class DataCollection:
             self.__google_maps_url = self.__dfCurr_dataset.at[id, 'google_maps_url']
             self.__has_markers = self.__dfCurr_dataset.at[id, 'has_markers']
             self.__data_type = self.__dfCurr_dataset.at[id, 'data_type_id']
+            self.__station_main_display_view = self.__dfCurr_dataset.at[id, 'station_station_cols']
+            self.__station_samples_display_view = self.__dfCurr_dataset.at[id, 'station_samples']
+            self.__station_years_display_view = self.__dfCurr_dataset.at[id, 'station_samples_per_year']
 
             self.__parameters = Parameters(self)
             self.__stations = Stations(self)
@@ -138,6 +147,25 @@ class DataCollection:
             self.__filter.year_slider = [self.__first_year, self.__last_year]
             self.filter_stations_cb = True
     
+    @property
+    def station_main_display_view(self):
+        '''sql string querying columns for station display view, menu item stations info'''
+
+        return self.__station_main_display_view
+    
+    @property
+    def station_samples_display_view(self):
+        '''sql string querying columns for station display view, menu item stations info'''
+
+        return self.__station_samples_display_view
+
+    @property
+    def station_years_display_view(self):
+        '''sql string querying columns for station display view, menu item stations info'''
+
+        return self.__station_years_display_view
+
+
     @property
     def first_year(self):
         '''Year of first sample collection'''
@@ -186,21 +214,26 @@ class DataCollection:
         '''List of ids from dataset table. the list is used to fill the dataset selection control'''
         return self.__dataset_options
     
+
     @property
     def dataset_display(self):
         '''dictionary of dataset id:name pairs for current data collection'''
         return self.__dataset_display
+
 
     @property
     def stations(self):
         '''Stations object associated with current data collection'''
         return self.__stations
     
+
     @property
     def parameters(self):
         '''Parameters object associated with current data collection'''
+
         return self.__parameters
     
+
     def show_url_list(self):
         '''In table refererence url references realted to each data collection can be defined and rendered with this function'''
 
@@ -208,6 +241,7 @@ class DataCollection:
         refs = db.execute_query(query)['html_reference'].tolist()
         for ref in refs:
             st.markdown('    * {}'.format(ref), unsafe_allow_html=True)
+
 
     def get_values(self, criteria):
         ''' Returns a data frame with all values matching the criteria'''
@@ -218,8 +252,8 @@ class DataCollection:
 
     def render_about_text(self):
         ''' Renders info on the selected data collection composed of: a header image, some explenatory text, a metadatatable for the 
-        data collection and metadata for each dataset included in the data collection
-        '''
+        data collection and metadata for each dataset included in the data collection'''
+
 
         id = self.__data_collection_id
         df = self.dfAll_data_collections
@@ -252,6 +286,13 @@ class DataCollection:
                 st.markdown('* *Number of sampling events*: {0:,}'.format(n_samples))
             st.markdown('* *Number of observations*: {0:n}'.format(df.at[dataset, 'number_of_observations']))
             st.markdown('* *Time interval covered*: {} - {}'.format(df.at[dataset, 'first_year'], df.at[dataset, 'last_year']))
+            self.render_help()
+
+    def render_help(self):
+        #logo = '<i class="material-icons">face</i>'
+        #st.markdown(logo, unsafe_allow_html=True)
+        st.write('<a href ""= >help</a>')
+
 
 class Stations:
     '''Holds all information on the stations related to the current dataset'''
@@ -264,6 +305,7 @@ class Stations:
         self.__stations_options = df['id'].tolist()
         self.__stations_display = dict(zip(self.__stations_options, values))
         self.__dfStations = df.set_index('id')
+        self.__plot = Charting(self)
 
     @property
     def dfStations(self):
@@ -279,12 +321,12 @@ class Stations:
 
     def get_table(self):
         if not self.__parent.filter.filter_stations_cb:
-            query = 'select * from envdata.v_stations_ds{}_display'.format(self.__parent.dataset_id)
+            query = self.__parent.station_main_display_view.format('1=1')
             result = db.execute_query(query)
             return result
         else: 
             result = pd.DataFrame({"Field":[], "Value":[]}) 
-            query = "SELECT * FROM envdata.v_stations where id = {0}".format(self.__parent.filter.stations_list_selection)
+            query = self.__parent.station_main_display_view.format('id = ' + str(self.__parent.filter.stations_list_selection))
             df = db.execute_query(query)
             # todo: make this a tools function
             for key, value in df.iteritems():
@@ -292,29 +334,50 @@ class Stations:
                 result = result.append(df2)
             return result.set_index('Field')
 
-    def get_samples(self, criteria):
+    def get_samples(self, sqlstr, criteria):
         ''' Returns a dataframe of samples as a dataframe where column 0 is the field name and column 1 is its value'''
-        
-        if self.__parent.data_type == cn.DataType.chemistry:
-            query = "SELECT * FROM envdata.v_samples_all where {} order by {}".format(criteria, cn.SAMPLE_DATE_COLUMN)
-            index_col = 'id'
-        else:
-            criteria = criteria.replace('station_id','t1.station_id')
-            criteria = criteria.replace('parameter_id','t1.parameter_id')
-            criteria = criteria.replace('dataset_id','t1.dataset_id')
-            query = """SELECT year(t1.value_date) as year, t2.station_name, t3.parameter_name, t3.unit,
-            MIN(t1.value) AS min_value, MAX(t1.value) AS max_value, AVG(t1.value) AS avg_value
-            FROM
-                envdata.time_series t1
-                inner join envdata.station t2 on t2.id = t1.station_id
-                inner join envdata.parameter t3 on t3.id = t1.parameter_id
-                where {} 
-                GROUP BY t1.dataset_id , t2.station_name , t3.parameter_name,t3.unit, year(t1.value_date)
-                order by {}""".format(criteria, cn.STATION_NAME_COLUMN)
-            index_col = 'station_name'
+
+        if self.__parent.data_type != cn.DataType.chemistry.value:
+            criteria = criteria.replace('station_id', 't1.station_id')
+            criteria = criteria.replace('parameter_id', 't1.parameter_id')
+            criteria = criteria.replace('dataset_id', 't1.dataset_id')
+            #index_col = 'station_name'
+        query = sqlstr.format(criteria)
         result = db.execute_query(query)
-        result = result.set_index(index_col)
         return result
+
+    def draw_map(self, station_name):
+        '''draws a map of all selected stations. if no filter is set, all stations are shown'''
+
+        if self.__parent.filter.filter_stations_cb:
+            query = "select lat, lon from v_stations where id = {}".format(self.__parent.filter.stations_list_selection)
+            title = station_name
+        else:
+            query = 'select lat, lon from v_stations'
+            title = 'All stations in dataset'
+        df = db.execute_query(query)
+        #make sure the station as coordinates
+        self.__plot.plot_map(title, df)
+
+        if self.__parent.has_google_maps_url():
+            text = r'[View all wells on my google maps]({})'.format(self.__parent.google_maps_url)
+            st.markdown(text)
+
+
+    def get_yearly_sample_summary_table(self):
+        '''Returns a dataframe with 1 record for every year when samples were collected'''
+        
+        query = self.__parent.station_years_display_view.format('t2.station_id = ' + str(self.__parent.filter.stations_list_selection))
+        df = db.execute_query(query)
+        return df
+    
+    def get_yearly_sample_summary_table(self):
+        '''Returns a dataframe with one record for every year when samples were collected from the currently selected station'''
+        
+        query = self.__parent.station_years_display_view.format('t2.station_id = ' + str(self.__parent.filter.stations_list_selection))
+        df = db.execute_query(query)
+        return df
+
 
     def render_menu(self):
         '''renders the station info menu controls'''
@@ -327,28 +390,44 @@ class Stations:
         df = self.get_table()
         #df.reset_index(inplace = True) #needed so station_name can be selected on plotly table
         if self.__parent.filter.filter_stations_cb:
+            st.markdown('#### Stations in filter')
             st.write(df)
+            df.reset_index(inplace = True) # make sure first column is exported
+            st.markdown(tools.get_table_download_link(df), unsafe_allow_html=True)
+            
+            # sample summary table
             criteria = "{0} = {1} and {2} = {3}".format('station_id', self.__parent.filter.stations_list_selection, 'dataset_id', self.__parent.dataset_id)
             #show samples belonging to sample
-            df = self.get_samples(criteria)
+            df = self.get_samples(self.__parent.station_samples_display_view, criteria)
             station_name = self.stations_display[self.__parent.filter.stations_list_selection]
             number_of_samples = len(df)
-            if self.__parent.data_type == cn.DataType.chemistry:
-                text = '##### {0} has {1} samples'.format(station_name, number_of_samples)
+
+            #title is different for chem samples and time series, with only 1 parameter
+            if self.__parent.data_type == cn.DataType.chemistry.value:
+                #sample summary table
+                text = '#### {0} has {1} samples'.format(station_name, number_of_samples)
+                st.markdown(text)
+                st.write(df)
+                st.markdown(tools.get_table_download_link(df), unsafe_allow_html=True)
+                
+                #yearly summary table
+                df = self.get_yearly_sample_summary_table()
+                st.markdown('#### Samples by year')
+                st.write(df)
             else:
-                text = 'Summary of measurements at station {}'.format(station_name)
-            st.markdown(text)
-            st.write(df)
-            #st.write(df.set_index('Field', inplace=True))
+                text = '#### Summary of measurements at station {}'.format(station_name)
+                st.markdown(text)
+                st.write(df)
         else:  
+            st.markdown('#### All stations')
             st.write(df)
             #column_values = [df[cn.STATION_NAME_COLUMN], df.aquifer_lithology, df.stratigraphy, df.well_depth, df.screen_hole, df.min_sample_year, df.max_sample_year, df.number_of_samples]
             #tools.show_table(df, column_values)
-        
-        if self.__parent.has_google_maps_url():
-            text = r'[View all wells on my google maps]({})'.format(self.__parent.google_maps_url)
-            st.markdown(text)
-        
+        st.markdown(tools.get_table_download_link(df), unsafe_allow_html=True)
+        clipboard.copy(station_name) #copy sattion name to clipboard so it can be pasted into google map if required
+        self.draw_map(station_name)
+
+
     def get_values(self, criteria):
         ''' Returns a data frame with all values matching the criteria'''
 
@@ -414,26 +493,128 @@ class Parameters:
     #    df = db.execute_query(query)
     #    return  df.at[0, cn.PAR_NAME_COLUMN]
 
-    def render_menu(self):
-        #sidebar menu
-        self.__parent.filter.filter_stations_cb = st.sidebar.checkbox('Filter stations', 
-            value = self.__parent.filter.filter_stations_cb, key  =None)
-        if self.__parent.filter.filter_stations_cb:
-            self.__parent.filter.stations_multilist_selection = st.sidebar.multiselect(label = cn.STATION_WIDGET_NAME, 
-                default = self.__parent.stations.stations_options[0], options = self.__parent.stations.stations_options, 
-                format_func=lambda x: self.__parent.stations.stations_display[x])
-        df = self.get_table()
+    def render_all_parameters_table(self):
+        '''This function is invoked, if no parameter filter is set. A single table including the metadata of all parameters 
+        is shown in the view panel'''
+
+        query = '''select parameter_name as Name, formula as Formula, unit as Unit, formula_Weight as FMW, valency as Valency, description
+            from envdata.v_parameters where dataset_id = {}'''.format(self.__parent.dataset_id)
+        df = db.execute_query(query)
+        st.markdown('All parameters ({})'.format(df.shape[0]))
         st.write(df)
+
+    def get_value(self, par_id, field):
+        '''Returns a metadata value from the parameter table for a specified parameter
+        in: parameter id
+            field name
+        out: metadata value for parameter id
+        '''
+
+        query = "select {} from parameter where id = {}".format(field,par_id)
+        df = db.execute_query(query)
+        result = df.at[0, field]
+        return result
+
+    def render_multi_parameters_table(self):
+        '''This function is invoked, if the parameter filter is set and multiple parameters are selected. 
+        The following tables are shown:
+        * parameters metadata
+        * parameter value summary per station
+        '''
+        
+        parameters = tools.get_cs_item_list(lst = self.__parent.filter.parameters_multilist_selection, separator = ',', quote_string = '')
+        query = """select t1.parameter_name, t1.formula, t1.unit, t2.min_value, t2.max_value, t2.average_value, t2.number_of_values,
+            t2.number_of_stations as stations, t2.first_year as 'First year', t2.last_year as 'Last year', t2.number_of_years as 'Number of years'
+        from 
+            envdata.v_parameters t1
+            inner join (select parameter_id, min(calc_value) min_value, max(calc_value) max_value, avg(calc_value) average_value, 
+            count(*) as number_of_values, count(distinct station_id) as number_of_stations, min(year(sample_date)) as first_year, 
+            max(year(sample_date)) as last_year, count(distinct year(sample_date)) as number_of_years
+            from 
+            envdata.v_observations 
+        where parameter_id in ({}) group by parameter_id) t2 on t2.parameter_id = t1.id""".format(parameters)
+        df = db.execute_query(query)
+        st.markdown('Parameters ({})'.format(df.shape[0]))
+        st.write(df)
+
+    def render_single_parameters_table(self):
+        '''This function is invoked, if the parameter filter is set and multiple parameters are selected. 
+        The following tables are shown:
+        * parameters metadata
+        * parameter value summary per station
+        * a map
+        '''
+
+        par_id = self.__parent.filter.parameters_multilist_selection[0]
+        query = """select t1.parameter_name as Name, t1.formula as Formula, t1.unit, t1.formula_weight as 'Formula weight', t1.valency as Valency,
+            t1.description as 'Description', t2.min_value, t2.max_value, t2.average_value, t2.number_of_values,
+            t2.number_of_stations as stations, t2.first_year as 'First year', t2.last_year as 'Last year', t2.number_of_years as 'Number of years'
+        from 
+            envdata.v_parameters t1
+            inner join (select parameter_id, min(calc_value) min_value, max(calc_value) max_value, avg(calc_value) average_value, 
+            count(*) as number_of_values, count(distinct station_id) as number_of_stations, min(year(sample_date)) as first_year, 
+            max(year(sample_date)) as last_year, count(distinct year(sample_date)) as number_of_years
+            from 
+            envdata.v_observations 
+        where parameter_id = {} group by parameter_id) t2 on t2.parameter_id = t1.id""".format(par_id)
+        
+        df = db.execute_query(query)
+        df = tools.transpose_dataframe(df)
+        parameter = self.parameters_display[par_id]
+        st.markdown("### {}".format(parameter))
+        st.write(df)
+        url = self.get_value(par_id, 'url')
+        if not url is None:
+            href = '<a href="{}" target = "_blank">More information (source: NIH-TOXNET)</a>'.format(url)
+            st.markdown(href, unsafe_allow_html=True)
+        
+        query = """select t2.station as Station, t2.min_value, t2.max_value, t2.average_value, t2.number_of_values,
+            t2.first_year as 'First year', t2.last_year as 'Last year', t2.number_of_years as 'Number of years'
+        from 
+            envdata.v_parameters t1
+            inner join (select parameter_id, station_name as station, min(calc_value) min_value, max(calc_value) max_value, avg(calc_value) average_value, 
+            count(*) as number_of_values, min(year(sample_date)) as first_year, 
+            max(year(sample_date)) as last_year, count(distinct year(sample_date)) as number_of_years
+            from 
+            envdata.v_observations
+        where parameter_id = {} group by parameter_id, station) t2 on t2.parameter_id = t1.id""".format(par_id)
+        st.markdown("### {} per station".format(parameter))
+        df = db.execute_query(query)
+        st.table(df)
+        st.markdown(tools.get_table_download_link(df), unsafe_allow_html=True)
+
+        query = """select lat, lon from v_stations where id in (select distinct station_id from v_observations
+            where parameter_id = {})""".format(par_id)
+        title = parameter
+        df = db.execute_query(query)
+        #make sure the station as coordinates
+        plt = Charting(self)
+        plt.plot_map(title, df)
+
+    def render_menu(self):
+        '''The function renders the sidebar menu for the parameters option menu item'''
+
+        self.__parent.filter.filter_parameters_cb = st.sidebar.checkbox('Filter parameters',
+            value = self.__parent.filter.filter_parameters_cb, key = None)
+        if self.__parent.filter.filter_parameters_cb:
+            self.__parent.filter.parameters_multilist_selection = st.sidebar.multiselect(label = 'Select one or multiple parameters',
+                default = self.__parameters_options[0], options = self.__parameters_options,
+                format_func = lambda x: self.__parameters_display[x])
+        else:
+            self.__parent.filter.parameters_multilist_selection = []
+
+        if len(self.__parent.filter.parameters_multilist_selection) == 0:
+            df = self.render_all_parameters_table()
+        elif len(self.__parent.filter.parameters_multilist_selection) == 1:
+            df = self.render_single_parameters_table()
+        else:
+            df = self.render_multi_parameters_table()
+
         #df = df.set_index(cn.PAR_NAME_COLUMN)
         #df = df[[cn.PAR_NAME_COLUMN, cn.PAR_LABEL_COLUMN, cn.PAR_UNIT_COLUMN]]
         #values = [df[cn.PAR_NAME_COLUMN], df[cn.PAR_LABEL_COLUMN], df[cn.PAR_UNIT_COLUMN]]
         #txt.show_table(df, values)
         #st.write("{} parameters found in stations {}".format(len(df.index), ','.join(ctrl['station_list_multi']) ))
-        if not self.__parent.filter.filter_stations_cb:
-            text = "This parameter list only includes parameters with at least one occurrence in one of the selected well."
-        else:
-            text = "This parameter list includes all parameters having been measured in the monitoring network."
-        st.markdown(text)
 
 class Charting:
     '''This class is used to generate plots'''

@@ -1,0 +1,179 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Main Concepts &#8212; EDE 0.0.2 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Getting Started" href="getting_started.html" />
+    <link rel="prev" title="Home" href="home.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="main-concepts">
+<h1>Main Concepts<a class="headerlink" href="#main-concepts" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="data-collection">
+<h2>Data collection<a class="headerlink" href="#data-collection" title="Permalink to this headline">¶</a></h2>
+<p>a data collection is a collection of datasets related to each other. The PGMN datacollection consists for example of the datasets chemistry, water levels and precipitation. A data collection requires a introductory text and a least one dataset.
+Data collections can be selected from the ‘select a data collection’ listbox above the menu.</p>
+<a class="reference internal image-reference" href="_images/1_1.png"><img alt="_images/1_1.png" class="align-center" src="_images/1_1.png" style="width: 227.49999999999997px; height: 240.79999999999998px;" /></a>
+</div>
+<div class="section" id="data-sets">
+<h2>Data sets<a class="headerlink" href="#data-sets" title="Permalink to this headline">¶</a></h2>
+<p>Each datasets consist of three tables:
+* a station table
+* a parameter table
+* a data table</p>
+<p>In order to explore a dataset, it needs to be selected. If a data collection includes only one dataset, for example the Privincial stream water quality monitoring network, this dataset is selected by default. If there are more than one dataset, a listbox is displayed below the data collection listbox where you may select the dataset you wish to explore.</p>
+<a class="reference internal image-reference" href="_images/1_2.png"><img alt="_images/1_2.png" class="align-center" src="_images/1_2.png" style="width: 193.79999999999998px; height: 117.6px;" /></a>
+</div>
+<div class="section" id="user-interface">
+<h2>User interface<a class="headerlink" href="#user-interface" title="Permalink to this headline">¶</a></h2>
+<p>The user interface is very simple. It is devide in a sideboard holding all controls and menu items and the view panel to the right.</p>
+<a class="reference internal image-reference" href="_images/1_3.png"><img alt="_images/1_3.png" class="align-center" src="_images/1_3.png" style="width: 998.9px; height: 554.4px;" /></a>
+<p>The sideboard is further subdivided from top to down into the data selection controls, the menu, and the controls for generating plots. The latter only appears if the menu item ‘plots’ is selected.</p>
+</div>
+<div class="section" id="menu">
+<h2>Menu<a class="headerlink" href="#menu" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="info">
+<h3>Info<a class="headerlink" href="#info" title="Permalink to this headline">¶</a></h3>
+<p>The information rendered in the view panel holds the following sections:
+* a general description of the dataset
+* metadata from the owner
+* links to web pages related to the data collection
+* Summary information for each dataset (number of stations, parmaeters, measurentments etc.)</p>
+</div>
+<div class="section" id="station-information">
+<h3>Station information<a class="headerlink" href="#station-information" title="Permalink to this headline">¶</a></h3>
+<p>In this mode, a list of stations appears below the menu where you can select stations, for which all available information should be displayed in the view panel. If a station is selected, the following tables and plots are displayed
+* table holds all information on the station (location, name, township etc.)
+* map showing position of station
+* table listing all samples collected at the station
+* table listing summary of samples collected at the station summarized by year</p>
+<p>Each table may be downloaded by clicking or rightclicking on the link below the table. If a google map was created with your stations, you may click the link below the the map to open the station locations in [google maps](<a class="reference external" href="https://www.google.com/maps/">https://www.google.com/maps/</a>). In google maps you will find a more detailed background map and in many regions on the globe you have the possilbity to virtually visit the location using streetmap. In order to find your well quickly, paste the station name into the search field. Note that the clipboard is automatically filled with the current station name, so it can be pasted directly into the google map search field.</p>
+<a class="reference internal image-reference" href="_images/1_5.png"><img alt="_images/1_5.png" class="align-center" src="_images/1_5.png" style="width: 456.0px; height: 227.60000000000002px;" /></a>
+</div>
+<div class="section" id="parameters-information">
+<h3>Parameters information<a class="headerlink" href="#parameters-information" title="Permalink to this headline">¶</a></h3>
+<p>In this mode, a selectbox with stations and a selectbox with parameters appear below the menu to you may control for which parameters information should be displayed in the view panel. If on or several stations are selected, the parameter list is filled with parameters that have been analysed for this station. If a parameter is selected, a detail table is displayed with information regarding the parameter. If a parameter is selected the following information is available in the view pane:
+* detail table holding information on the parameter
+* summary table listing all stations, where parameter was measured including number of measurments, average value, first year of observation, last year of observation
+* table listing concentration summary per station for
+* table listing summary of samples collected at the station summarized by year</p>
+</div>
+<div class="section" id="plotting">
+<h3>Plotting<a class="headerlink" href="#plotting" title="Permalink to this headline">¶</a></h3>
+<p>The Plotting menu allows you to visualize the data using various charts.</p>
+<div class="section" id="histogram">
+<h4>Histogram<a class="headerlink" href="#histogram" title="Permalink to this headline">¶</a></h4>
+</div>
+</div>
+<div class="section" id="tables">
+<h3>Tables<a class="headerlink" href="#tables" title="Permalink to this headline">¶</a></h3>
+<p>Data is displayed as plots or in tables. For larger tables use the scrollbars to view the full table content. you may also use the handle in the upper right to open a new window showing a larger version of the table.</p>
+<a class="reference internal image-reference" href="_images/1_4.png"><img alt="_images/1_4.png" class="align-center" src="_images/1_4.png" style="width: 591.5px; height: 259.7px;" /></a>
+<p>Below each table, you will find a download link, that will download a csv file of the data. You may either just click on the link and download the file under a default name to your download folder. Rightclick the link and select the save as command in the contect menu, to directly place the file under a specified name and in your target folder.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">EDE</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="home.html">Home</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Main Concepts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#data-collection">Data collection</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data-sets">Data sets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#user-interface">User interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#menu">Menu</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="home.html" title="previous chapter">Home</a></li>
+      <li>Next: <a href="getting_started.html" title="next chapter">Getting Started</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Lukas Calmbach.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/main_concepts.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

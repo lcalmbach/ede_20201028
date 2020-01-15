@@ -56,7 +56,7 @@ plot_type_list = ['bar chart','box plot','scatter plot','time series','histogram
 group_by_options = ['none','station_name','year','season', 'aquifer_type']
 group_by_display = {'none': 'none', 'station_name': 'station','year': 'year', 'season': 'season', 'aquifer_type': 'aquifer type'}
 months_list = ['<all>','1','2','3','4','5','6','7','8','9','10','11','12']
-menu_list = ['Info','Plotting', 'Station information', 'Parameters information']  # 'Help', , 'Settings'
+menu_list = ['Info', 'Station information', 'Parameters information', 'Plotting']  # 'Help', , 'Settings'
 color_schema = "set1" # https://vega.github.io/vega/docs/schemes/#reference
 symbol_size = 60
 google_link = r'https://drive.google.com/open?id=12WTf4bepPi9u6rtFDSMXIiBCOOzcz09p&usp=sharing'

@@ -15,11 +15,11 @@ def init():
     global mydb
     
     mydb = mysql.connect(
-        #host = "localhost",
-        host = "terra-1.cxudpg3pe6ie.us-east-2.rds.amazonaws.com",
+        host = "localhost",
+        #host = "terra-1.cxudpg3pe6ie.us-east-2.rds.amazonaws.com",
         user = "root",
-        #passwd = "password",
-        passwd = "password63",
+        passwd = "password",
+        #passwd = "password63",
         database ="envdata"
     )
 
