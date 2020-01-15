@@ -261,6 +261,7 @@ class DataCollection:
         st.write(df.at[id, 'name_long'])
         text = df.at[id, 'about_text']
         st.markdown(text)
+
         # metadata for 
         st.markdown('### Metadata from data owner:')
         st.markdown('* Publisher: {0}'.format(df.at[id, 'publisher']))
@@ -286,13 +287,13 @@ class DataCollection:
                 st.markdown('* *Number of sampling events*: {0:,}'.format(n_samples))
             st.markdown('* *Number of observations*: {0:n}'.format(df.at[dataset, 'number_of_observations']))
             st.markdown('* *Time interval covered*: {} - {}'.format(df.at[dataset, 'first_year'], df.at[dataset, 'last_year']))
-            self.render_help()
 
     def render_help(self):
         #logo = '<i class="material-icons">face</i>'
-        #st.markdown(logo, unsafe_allow_html=True)
-        st.write('<a href ""= >help</a>')
-
+        #st.markdown(logo, unsafe_allow_html=True)<img src="">
+        help_logo = 'https://img.icons8.com/offices/30/000000/help.png'
+        link = 'https://lcalmbach.github.io/ede_doc.github.io/'
+        st.sidebar.markdown('<a href = "{}" target = "_blank"><img border="0" alt="Help" src="{}"></a>'.format(link, help_logo), unsafe_allow_html=True)
 
 class Stations:
     '''Holds all information on the stations related to the current dataset'''

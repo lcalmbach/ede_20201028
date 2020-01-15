@@ -37,19 +37,21 @@ The user interface is very simple. It is devide in a sideboard holding all contr
 
 The sideboard is further subdivided from top to down into the data selection controls, the menu, and the controls for generating plots. The latter only appears if the menu item 'plots' is selected.
 
-****
+####
 Menu
+####
 ****
 Info
-====
+****
 The information rendered in the view panel holds the following sections: 
 * a general description of the dataset
 * metadata from the owner
 * links to web pages related to the data collection
-* Summary information for each dataset (number of stations, parmaeters, measurentments etc.)
+* summary information for each dataset (number of stations, parmaeters, measurentments etc.)
 
+*******************
 Station information
-===================
+*******************
 In this mode, a list of stations appears below the menu where you can select stations, for which all available information should be displayed in the view panel. If a station is selected, the following tables and plots are displayed
 * table holds all information on the station (location, name, township etc.)
 * map showing position of station
@@ -63,8 +65,9 @@ Each table may be downloaded by clicking or rightclicking on the link below the 
    :align: center
 
 
+**********************
 Parameters information
-======================
+**********************
 In this mode, a selectbox with stations and a selectbox with parameters appear below the menu to you may control for which parameters information should be displayed in the view panel. If on or several stations are selected, the parameter list is filled with parameters that have been analysed for this station. If a parameter is selected, a detail table is displayed with information regarding the parameter. If a parameter is selected the following information is available in the view pane:
 * detail table holding information on the parameter
 * summary table listing all stations, where parameter was measured including number of measurments, average value, first year of observation, last year of observation
@@ -87,4 +90,4 @@ Data is displayed as plots or in tables. For larger tables use the scrollbars to
    :scale: 70 %
    :align: center
 
-Below each table, you will find a download link, that will download a csv file of the data. You may either just click on the link and download the file under a default name to your download folder. Rightclick the link and select the save as command in the contect menu, to directly place the file under a specified name and in your target folder.
+Below each table, you will find a link, that will download a csv file of the data. You may either just click on the link and download the file under a default name to your download folder. Rightclick the link and select the <save as> command in the context menu, to directly place the file under a specified name in your target folder.

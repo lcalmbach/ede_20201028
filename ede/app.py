@@ -46,6 +46,6 @@ def show_menu():
     elif dc.menu_selection == 'Plotting':
         plt = ft.Charting(dc)
         plt.render_menu()
-
+    dc.render_help()
 if __name__ == "__main__":
     show_menu()
