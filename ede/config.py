@@ -12,6 +12,8 @@ if socket.gethostname() == LOCAL_SERVER:
 else:
     SQL_CONNECT_STRING = 'mysql://root:password63@terra-1.cxudpg3pe6ie.us-east-2.rds.amazonaws.com/envdata'
 
+USER_MANUAL_LINK = 'https://ede.readthedocs.io/en/latest/'
+HELP_ICON = 'https://img.icons8.com/offices/30/000000/help.png'
 YEAR_COLUMN = 'year'
 MONTH_COLUMN = 'month'
 DAY_COLUMN = 'day'

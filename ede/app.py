@@ -1,6 +1,6 @@
 """This example is a Streamlit implementation of an interactive groundwater quality data app.
 This app allows to explore the Provincial Groundwater Monitoring Network dataset encompassing 
-over XX years of data. The data can be explored using various Altair plots.
+over XX years of data. The data can be explored using various Altair plot types.
 Author: Lukas Calmbach lcalmbach@gmail.com
 """
 
@@ -16,7 +16,7 @@ import fontus as ft
 import tools
 import database as db
 
-dc = ft.DataCollection()
+session = ft.Fontus()
 
 def info_sideboard():
     st.sidebar.subheader("About")
@@ -25,27 +25,26 @@ def info_sideboard():
 
 def show_menu():
     st.sidebar.markdown('![logo]({}) <b><span style="color:blue">E</span>nvironmental <span style="color:blue">D</span>ata <span style="color:blue">E</span>xplorer</b>'.format(cn.LOGO_REFERENCE), unsafe_allow_html=True)
-    dc.data_collection_id = st.sidebar.selectbox('Select a data collection', dc.data_collection_options, format_func = lambda x: dc.data_collection_display[x])
+    session.data_collection_id = st.sidebar.selectbox('Select a data collection', session.data_collection_options, format_func = lambda x: session.data_collection_display[x])
 
     #only show the dataset selection of there is more than 1 set
-    if len(dc.dataset_options) > 1:
-        dc.dataset_id = st.sidebar.selectbox('Select a dataset', dc.dataset_options, format_func = lambda x: dc.dataset_display[x])
+    if len(session.dataset_options) > 1:
+        session.dataset_id = st.sidebar.selectbox('Select a dataset', session.dataset_options, format_func = lambda x: session.dataset_display[x])
     # now that the dataset id is set init station and parameter lists
     st.sidebar.header('Menu')
-    dc.menu_selection = st.sidebar.radio('', cn.menu_list)
+    session.menu = st.sidebar.radio('', cn.menu_list)
     st.sidebar.markdown('---')
-    if dc.menu_selection == 'Info':
-        dc.render_about_text()
+    if session.menu == 'Info':
+        session.render_about_text()
         info_sideboard()
-    elif dc.menu_selection == 'Help':
+    elif session.menu == 'Help':
         tools.print_help()
-    elif dc.menu_selection == 'Station information':
-        dc.stations.render_menu()
-    elif dc.menu_selection == 'Parameters information':
-        dc.parameters.render_menu()
-    elif dc.menu_selection == 'Plotting':
-        plt = ft.Charting(dc)
-        plt.render_menu()
-    dc.render_help()
+    elif session.menu == 'Station information':
+        session.stations.render_menu()
+    elif session.menu == 'Parameters information':
+        session.parameters.render_menu()
+    elif session.menu == 'Plotting':
+        session.plots.render_menu()
+    session.render_help()
 if __name__ == "__main__":
     show_menu()
