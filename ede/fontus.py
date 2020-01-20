@@ -54,6 +54,7 @@ class Fontus:
         '''menu selection: info, plotting, parameters info, stations info'''
 
         self.__menu = menuitem
+        self.filter.fill_controls()
 
 
     @property
@@ -129,18 +130,16 @@ class Fontus:
             self.__google_maps_url = self.__dfCurr_dataset.at[id, 'google_maps_url']
             self.__has_markers = self.__dfCurr_dataset.at[id, 'has_markers']
             self.__data_type = self.__dfCurr_dataset.at[id, 'data_type_id']
+            query = "SELECT * FROM envdata.list_field where dataset_id = {} order by order_id".format(self.__dataset_id)
+            df = db.execute_query(query)
+            self.__filter = Filter(self, df)
             self.__station_main_display_view = self.__dfCurr_dataset.at[id, 'station_station_cols']
             self.__station_samples_display_view = self.__dfCurr_dataset.at[id, 'station_samples']
             self.__station_years_display_view = self.__dfCurr_dataset.at[id, 'station_samples_per_year']
             self.__parameters = Parameters(self)
             self.__stations = Stations(self)
             
-            query = "SELECT * FROM envdata.list_field where dataset_id = {} order by order_id".format(self.__dataset_id)
-            df = db.execute_query(query)
-            self.__filter = Filter(self, df)
-            #self.__filter.year_slider = [self.__first_year, self.__last_year]
-
-
+            
     @property
     def station_main_display_view(self):
         '''sql string querying columns for station display view, menu item stations info'''
@@ -250,7 +249,6 @@ class Fontus:
         ''' Renders info on the selected data collection composed of: a header image, some explenatory text, a metadatatable for the 
         data collection and metadata for each dataset included in the data collection'''
 
-
         id = self.__data_collection_id
         df = self.dfAll_data_collections
         st.image('static/images/' + df.at[id, 'about_image'])
@@ -309,33 +307,30 @@ class Filter:
         '''
 
         self.__parent = parent
-        self.__station_field_options = []
-        self.filters_multilist = [] # selected field for filtering 
-        dfFilters = df_fields[(df_fields.type_id == 1)]
-        dfFilters.set_index('key', inplace = True)
+        self.__df_filter_fields = df_fields
+        self.filters_multilist = []
         self.__station_fields_multilist = dict([])
-        for row in dfFilters.itertuples(index=True):
-            self.__station_fields_multilist[row[0]] = self.FilterItem(parent, row)
-            self.__station_field_options.append(row[0])
-        
-        #self.__options['parameter'] = [item.strip() for item in par_lis]
-        #self.__options['plot'] = [item.strip() for item in pl_lis]
-        
+        self.__station_field_options = []
         self.station_multilist = []
-        self.__aquifer_multilist = []
-        self.__water_body_multilist = []
-        self.__county_multilist = []
-        self.__authority_multilist = []
-        self.station_list = 0
         self.parameter_multilist = []
         self.parameter_list = 0
         self.year_slider = []
         self.season_list = 0
-        self.filter_parameter_groups_cb = False
 
         self.__station_main_display_view = ''
         self.__station_samples_display_view = ''
         self.__station_years_display_view = ''
+
+    def fill_controls(self):
+        '''fills the dictionary __station_fields_multilist with all filter options for each menu item'''
+
+        if len(self.__df_filter_fields)>0:
+            type_id = cn.dict_menu_filter_type[self.__parent.menu]
+            dfFilters = self.__df_filter_fields[(self.__df_filter_fields.type_id == type_id)]
+            dfFilters.set_index('key', inplace = True)
+            for row in dfFilters.itertuples(index=True):
+                self.__station_fields_multilist[row[0]] = self.FilterItem(self.__parent, row)
+                self.__station_field_options.append(row[0])
 
     @property
     def station_fields_multilist(self):
@@ -346,7 +341,7 @@ class Filter:
 
 
     class FilterItem:
-        '''filter item used to dynamically generate UI station and parmaeter filter controls. 
+        '''filter item used to dynamically generate UI station and parameter filter controls. 
         Values are stored in table list_field'''
 
         def __init__(self, parent, row):
@@ -355,17 +350,12 @@ class Filter:
             self.label = row[4]
             self.default_value = row[5]
             self.value = []
-            query = "select distinct {0} from station where dataset_id = {1} order by {0}".format(row[3], parent.dataset_id)
+            query = "select distinct {0} from {1} where dataset_id = {2} order by {0}".format(row[3], cn.dict_menu_menu_view[parent.menu], parent.dataset_id)
             self.options = db.execute_query(query)[row[3]].tolist()
-
-
-    def set_station_field_value(self, lis_type, lis):
-        self.__station_fields_multilist[lis_type] = lis
-        criteria = self.get_expression()
 
     
     def get_expression(self):
-        '''returns a filter expression depending on the context'''
+        '''returns a filter expression depending on the menu context'''
 
         result = ''
         if self.__parent.menu == 'Station information':
@@ -375,6 +365,11 @@ class Filter:
                     lis = tools.get_cs_item_list(item.value, ',' , "'")
                     result += '{} {} in ({})'.format((' AND ' if result > '' else ''), item.field, lis)
         return result
+
+    #def set_station_field_value(self, lis_type, lis):
+    #    '''set the appropriate filter list control'''
+    #
+    #    self.__station_fields_multilist[lis_type].value = lis
 
 
     def render_menu(self, menu_type):
@@ -386,15 +381,13 @@ class Filter:
         self.filters_multilist = st.sidebar.multiselect(label = 'Filter data by', 
             default = self.filters_multilist, options = self.__station_field_options)
         
-        for item in self.filters_multilist:
-            self.__station_fields_multilist[item].value = st.sidebar.multiselect(label = self.__station_fields_multilist[item].label, 
-                options = self.__station_fields_multilist[item].options)
-        criteria = self.get_expression()
-
-        self.__parent.stations.refresh_station_options(criteria)
-        if 'station_name' in self.filters_multilist:
-            self.station_multilist = st.sidebar.multiselect(label = cn.STATION_WIDGET_NAME, 
-                options = self.__parent.stations.stations_options, format_func=lambda x: self.__parent.stations.stations_display[x]) 
+        for filt_fld in self.filters_multilist:
+            item = self.__station_fields_multilist[filt_fld]
+            if filt_fld == 'station':
+                criteria = self.get_expression()
+                self.__parent.stations.refresh_station_options(criteria)
+            item.value = st.sidebar.multiselect(label = item.label, 
+                options = item.options)
 
 
 class Stations:
@@ -402,7 +395,6 @@ class Stations:
 
     def __init__(self, parent):
         self.__parent = parent
-        self.refresh_station_options(criteria = '')
 
 
     def refresh_station_options(self, criteria):
@@ -410,14 +402,12 @@ class Stations:
         used in the list. '''
 
         if criteria == '':
-            query = "SELECT * FROM envdata.v_stations where number_of_samples > 0 and dataset_id = {0} order by {1};".format(self.__parent.dataset_id, cn.STATION_NAME_COLUMN)
+            query = "SELECT station_name FROM envdata.v_stations where number_of_samples > 0 and dataset_id = {0} order by {1};".format(self.__parent.dataset_id, cn.STATION_NAME_COLUMN)
         else:
-            query = "SELECT * FROM envdata.v_stations where number_of_samples > 0 and dataset_id = {0} and {1} order by {2};".format(self.__parent.dataset_id, criteria, cn.STATION_NAME_COLUMN)
+            query = "SELECT station_name FROM envdata.v_stations where number_of_samples > 0 and dataset_id = {0} and {1} order by {2};".format(self.__parent.dataset_id, criteria, cn.STATION_NAME_COLUMN)
         df = db.execute_query(query)
-        values = df[cn.STATION_NAME_COLUMN].tolist()
-        self.__stations_options = df['id'].tolist()
-        self.__stations_display = dict(zip(self.__stations_options, values))
-        self.__dfStations = df.set_index('id')
+        lis = df[cn.STATION_NAME_COLUMN].tolist()
+        self.__parent.filter.station_fields_multilist['station'].options = lis
 
     def get_table(self, criteria):
         '''returns the metadata for all stations, if no station is selected, or the selected stations'''
@@ -487,8 +477,9 @@ class Stations:
         station_name = ''
         
         #df.reset_index(inplace = True) #needed so station_name can be selected on plotly table
-        if len(self.__parent.filter.station_fields_multilist['station'].value) == 1:
-            station_name = self.__parent.filter.station_fields_multilist['station'].value[0]
+        lis = self.__parent.filter.station_fields_multilist['station'].value
+        if len(lis) == 1:
+            station_name = lis[0]
             st.markdown('#### {}'.format(station_name))
             st.write(df)
             df.reset_index(inplace = True) # make sure first column is exported
@@ -602,26 +593,28 @@ class Parameters:
         st.markdown('All parameters ({})'.format(df.shape[0]))
         st.write(df)
 
-    def get_value(self, par_id, field):
+    def get_value(self, parameter, field):
         '''Returns a metadata value from the parameter table for a specified parameter
         in: parameter id
             field name
         out: metadata value for parameter id
         '''
 
-        query = "select {} from parameter where id = {}".format(field,par_id)
+        query = "select {} from v_parameters where dataset_id = {} and parameter_name = '{}'".format(field, self.__parent.dataset_id, parameter)
         df = db.execute_query(query)
         result = df.at[0, field]
         return result
 
-    def render_multi_parameters_table(self):
+    def render_multi_parameters_table(self, lis):
         '''This function is invoked, if the parameter filter is set and multiple parameters are selected. 
         The following tables are shown:
         * parameters metadata
         * parameter value summary per station
         '''
-        
-        parameters = tools.get_cs_item_list(lst = self.__parent.filter.parameters_multilist, separator = ',', quote_string = '')
+
+        parameters = tools.get_cs_item_list(lst = lis, separator = ',', quote_string = "'")
+        sel_par_where_expression = 'and parameter_name in ({})'.format(parameters) if len(lis) > 0 else ''
+        st.write (sel_par_where_expression)
         query = """select t1.parameter_name, t1.formula, t1.unit, t2.min_value, t2.max_value, t2.average_value, t2.number_of_values,
             t2.number_of_stations as stations, t2.first_year as 'First year', t2.last_year as 'Last year', t2.number_of_years as 'Number of years'
         from 
@@ -631,12 +624,12 @@ class Parameters:
             max(year(sample_date)) as last_year, count(distinct year(sample_date)) as number_of_years
             from 
             envdata.v_observations 
-        where parameter_id in ({}) group by parameter_id) t2 on t2.parameter_id = t1.id""".format(parameters)
+        where dataset_id = {} {} group by parameter_id) t2 on t2.parameter_id = t1.id""".format(self.__parent.dataset_id, sel_par_where_expression, parameters)
         df = db.execute_query(query)
         st.markdown('Parameters ({})'.format(df.shape[0]))
         st.write(df)
 
-    def render_single_parameters_table(self):
+    def render_single_parameters_table(self, lis):
         '''This function is invoked, if the parameter filter is set and multiple parameters are selected. 
         The following tables are shown:
         * parameters metadata
@@ -644,69 +637,69 @@ class Parameters:
         * a map
         '''
 
-        par_id = self.__parent.filter.parameters_multilist[0]
-        query = """select t1.parameter_name as Name, t1.formula as Formula, t1.unit, t1.formula_weight as 'Formula weight', t1.valency as Valency,
-            t1.description as 'Description', t2.min_value, t2.max_value, t2.average_value, t2.number_of_values,
-            t2.number_of_stations as stations, t2.first_year as 'First year', t2.last_year as 'Last year', t2.number_of_years as 'Number of years'
-        from 
-            envdata.v_parameters t1
-            inner join (select parameter_id, min(calc_value) min_value, max(calc_value) max_value, avg(calc_value) average_value, 
-            count(*) as number_of_values, count(distinct station_id) as number_of_stations, min(year(sample_date)) as first_year, 
-            max(year(sample_date)) as last_year, count(distinct year(sample_date)) as number_of_years
+        if len(lis) > 0:
+            parameter = lis[0]
+            query = """select t1.parameter_name as Name, t1.formula as Formula, t1.unit, t1.formula_weight as 'Formula weight', t1.valency as Valency,
+                t1.description as 'Description', t2.min_value, t2.max_value, t2.average_value, t2.number_of_values,
+                t2.number_of_stations as stations, t2.first_year as 'First year', t2.last_year as 'Last year', t2.number_of_years as 'Number of years'
             from 
-            envdata.v_observations 
-        where parameter_id = {} group by parameter_id) t2 on t2.parameter_id = t1.id""".format(par_id)
-        
-        df = db.execute_query(query)
-        df = tools.transpose_dataframe(df)
-        parameter = self.parameters_display[par_id]
-        st.markdown("### {}".format(parameter))
-        st.write(df)
-        url = self.get_value(par_id, 'url')
-        if not url is None:
-            href = '<a href="{}" target = "_blank">More information (source: NIH-TOXNET)</a>'.format(url)
-            st.markdown(href, unsafe_allow_html=True)
-        
-        query = """select t2.station as Station, t2.min_value, t2.max_value, t2.average_value, t2.number_of_values,
-            t2.first_year as 'First year', t2.last_year as 'Last year', t2.number_of_years as 'Number of years'
-        from 
-            envdata.v_parameters t1
-            inner join (select parameter_id, station_name as station, min(calc_value) min_value, max(calc_value) max_value, avg(calc_value) average_value, 
-            count(*) as number_of_values, min(year(sample_date)) as first_year, 
-            max(year(sample_date)) as last_year, count(distinct year(sample_date)) as number_of_years
+                envdata.v_parameters t1
+                inner join (select parameter_id, min(calc_value) min_value, max(calc_value) max_value, avg(calc_value) average_value, 
+                count(*) as number_of_values, count(distinct station_id) as number_of_stations, min(year(sample_date)) as first_year, 
+                max(year(sample_date)) as last_year, count(distinct year(sample_date)) as number_of_years
+                from 
+                envdata.v_observations 
+            where parameter_name = '{}' group by parameter_name) t2 on t2.parameter_id = t1.id
+            order by t1.parameter_name""".format(parameter)
+            
+            df = db.execute_query(query)
+            df = tools.transpose_dataframe(df)
+            st.markdown("### {}".format(parameter))
+            st.write(df)
+            url = self.get_value(parameter, 'url')
+            if not url is None:
+                href = '<a href="{}" target = "_blank">More information (source: NIH-TOXNET)</a>'.format(url)
+                st.markdown(href, unsafe_allow_html=True)
+            
+            query = """select t2.station as Station, t2.min_value, t2.max_value, t2.average_value, t2.number_of_values,
+                t2.first_year as 'First year', t2.last_year as 'Last year', t2.number_of_years as 'Number of years'
             from 
-            envdata.v_observations
-        where parameter_id = {} group by parameter_id, station) t2 on t2.parameter_id = t1.id""".format(par_id)
-        st.markdown("### {} per station".format(parameter))
-        df = db.execute_query(query)
-        st.table(df)
-        st.markdown(tools.get_table_download_link(df), unsafe_allow_html=True)
+                envdata.v_parameters t1
+                inner join (select parameter_id, station_name as station, min(calc_value) min_value, max(calc_value) max_value, avg(calc_value) average_value, 
+                count(*) as number_of_values, min(year(sample_date)) as first_year, 
+                max(year(sample_date)) as last_year, count(distinct year(sample_date)) as number_of_years
+                from 
+                envdata.v_observations
+            where parameter_name = '{}' group by parameter_name, station) t2 on t2.parameter_id = t1.id""".format(parameter)
+            st.markdown("### {} per station".format(parameter))
+            df = db.execute_query(query)
+            st.table(df)
+            st.markdown(tools.get_table_download_link(df), unsafe_allow_html=True)
 
-        query = """select lat, lon from v_stations where id in (select distinct station_id from v_observations
-            where parameter_id = {})""".format(par_id)
-        title = parameter
-        df = db.execute_query(query)
-        #make sure the station as coordinates
-        self.parent.plots.plot_map(title, df)
+            query = """select lat, lon from v_stations where id in (select distinct station_id from v_observations
+                where parameter_name = '{}')""".format(parameter)
+            title = parameter
+            df = db.execute_query(query)
+            #make sure the station as coordinates
+            self.parent.plots.plot_map(title, df)
+        else:
+            st.info('Please select at least one parameter')
 
     def render_menu(self):
         '''The function renders the sidebar menu for the parameters option menu item'''
 
-        self.__parent.filter.filter_parameters_cb = st.sidebar.checkbox('Filter parameters',
-            value = self.__parent.filter.filter_parameters_cb, key = None)
-        if self.__parent.filter.filter_parameters_cb:
-            self.__parent.filter.parameters_multilist = st.sidebar.multiselect(label = 'Select one or multiple parameters',
-                default = self.__parameters_options[0], options = self.__parameters_options,
-                format_func = lambda x: self.__parameters_display[x])
-        else:
-            self.__parent.filter.parameters_multilist = []
+        #sidebar menu
+        self.__parent.filter.render_menu('parameter')
+        
+        #df.reset_index(inplace = True) #needed so station_name can be selected on plotly table
+        lis = self.__parent.filter.station_fields_multilist['parameter'].value
 
-        if len(self.__parent.filter.parameters_multilist) == 0:
-            df = self.render_all_parameters_table()
-        elif len(self.__parent.filter.parameters_multilist) == 1:
-            df = self.render_single_parameters_table()
+        if len(lis) == 0:
+            self.render_multi_parameters_table(lis)
+        elif len(lis) == 1:
+            df = self.render_single_parameters_table(lis)
         else:
-            df = self.render_multi_parameters_table()
+            df = self.render_multi_parameters_table(lis)
 
         #df = df.set_index(cn.PAR_NAME_COLUMN)
         #df = df[[cn.PAR_NAME_COLUMN, cn.PAR_LABEL_COLUMN, cn.PAR_UNIT_COLUMN]]
@@ -861,7 +854,7 @@ class Plots:
             if self.__show_data_table:
                 st.dataframe(plot_results[1])
         else:
-            st.write('Insufficient data')
+            st.info('Plot could not be generated: insufficient data')
 
     def plot_schoeller(self, title, df):
         ''' todo: schoeller plot'''
@@ -990,27 +983,30 @@ class Plots:
         #if df.count == 0:
         #    df = dfStations
 
-        midpoint = (np.average(df[cn.LATITUDE_COLUMN]), np.average(df[cn.LONGITUDE_COLUMN]))
-        st.deck_gl_chart(
-            viewport={
-                "latitude": midpoint[0],
-                "longitude": midpoint[1],
-                "zoom": 5,
-                "pitch": 0,
-            },
-            layers=[
-                {
-                    'type': 'ScatterplotLayer',
-                    'data': df,
-                    'radiusScale': 10,
-                    'radiusMinPixels': 5,
-                    'radiusMaxPixels': 15,
-                    'elevationScale': 4,
-                    'elevationRange': [0, 10000],
-                    'getFillColor': [255,0,0]
-                }
-            ],
-        )
+        if df.shape[0] > 0: 
+            midpoint = (np.average(df[cn.LATITUDE_COLUMN]), np.average(df[cn.LONGITUDE_COLUMN]))
+            st.deck_gl_chart(
+                viewport={
+                    "latitude": midpoint[0],
+                    "longitude": midpoint[1],
+                    "zoom": 5,
+                    "pitch": 0,
+                },
+                layers=[
+                    {
+                        'type': 'ScatterplotLayer',
+                        'data': df,
+                        'radiusScale': 10,
+                        'radiusMinPixels': 5,
+                        'radiusMaxPixels': 15,
+                        'elevationScale': 4,
+                        'elevationRange': [0, 10000],
+                        'getFillColor': [255,0,0]
+                    }
+                    ],)
+        else:
+            st.warning('Unable to create map: no location data was found')
+
 
     def plot_time_series(self, title, df):
         '''Plots a time series plot. input: title: plot title, df: datafram with the data, ctrl: list of GUI controls'''

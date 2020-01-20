@@ -12,6 +12,23 @@ if socket.gethostname() == LOCAL_SERVER:
 else:
     SQL_CONNECT_STRING = 'mysql://root:password63@terra-1.cxudpg3pe6ie.us-east-2.rds.amazonaws.com/envdata'
 
+dict_menu_filter_type = {
+    "Info": 0,
+    "Station information": 1,
+    "Parameters information": 2,
+    "Plotting": 3
+}
+
+dict_menu_menu_view = {
+    "Info": '',
+    "Station information": 'v_stations',
+    "Parameters information": 'v_parameters',
+    "Plotting": 'todo'
+}
+
+FILTER_TYPE_STATION = 1
+FILTER_TYPE_PARAMETER = 2
+FILTER_TYPE_PLOT = 3
 USER_MANUAL_LINK = 'https://ede.readthedocs.io/en/latest/'
 HELP_ICON = 'https://img.icons8.com/offices/30/000000/help.png'
 YEAR_COLUMN = 'year'
