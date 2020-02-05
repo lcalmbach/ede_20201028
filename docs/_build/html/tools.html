@@ -1,0 +1,141 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>tools module &#8212; ede  documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="fontus module" href="fontus.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="fontus.html" title="fontus module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ede  documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-tools">
+<span id="tools-module"></span><h1>tools module<a class="headerlink" href="#module-tools" title="Permalink to this headline">¶</a></h1>
+<p>collection of useful functions</p>
+<dl class="function">
+<dt id="tools.color_gradient">
+<code class="sig-prename descclassname">tools.</code><code class="sig-name descname">color_gradient</code><span class="sig-paren">(</span><em class="sig-param">value</em>, <em class="sig-param">min_val</em>, <em class="sig-param">max_val</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tools.html#color_gradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tools.color_gradient" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="tools.color_gradient_">
+<code class="sig-prename descclassname">tools.</code><code class="sig-name descname">color_gradient_</code><span class="sig-paren">(</span><em class="sig-param">row</em>, <em class="sig-param">min_val</em>, <em class="sig-param">max_val</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tools.html#color_gradient_"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tools.color_gradient_" title="Permalink to this definition">¶</a></dt>
+<dd><p>projects a value on a color gradient scale given the min and max value. 
+the color gradient type is defined in the config, e.g. blue-green, red, blue etc.
+returns a string with rgb values</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tools.get_cs_item_list">
+<code class="sig-prename descclassname">tools.</code><code class="sig-name descname">get_cs_item_list</code><span class="sig-paren">(</span><em class="sig-param">lst</em>, <em class="sig-param">separator='</em>, <em class="sig-param">'</em>, <em class="sig-param">quote_string=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tools.html#get_cs_item_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tools.get_cs_item_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="tools.get_pivot_data">
+<code class="sig-prename descclassname">tools.</code><code class="sig-name descname">get_pivot_data</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">group_by</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tools.html#get_pivot_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tools.get_pivot_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="tools.get_table_download_link">
+<code class="sig-prename descclassname">tools.</code><code class="sig-name descname">get_table_download_link</code><span class="sig-paren">(</span><em class="sig-param">df</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tools.html#get_table_download_link"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tools.get_table_download_link" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a link allowing the data in a given panda dataframe to be downloaded
+in:  dataframe
+out: href string</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tools.show_table">
+<code class="sig-prename descclassname">tools.</code><code class="sig-name descname">show_table</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">values</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tools.html#show_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tools.show_table" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="tools.transpose_dataframe">
+<code class="sig-prename descclassname">tools.</code><code class="sig-name descname">transpose_dataframe</code><span class="sig-paren">(</span><em class="sig-param">df</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tools.html#transpose_dataframe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#tools.transpose_dataframe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transposes a dataframe that has exactly 1 row so column names become row headers
+in: dataframe with 1 row and n columns
+out: transposed dataframe with 2 columns and n rows</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="fontus.html"
+                        title="previous chapter">fontus module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/tools.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="fontus.html" title="fontus module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ede  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Lukas Calmbach.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.1.
+    </div>
+  </body>
+</html>

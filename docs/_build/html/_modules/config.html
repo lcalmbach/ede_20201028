@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>config &#8212; ede  documentation</title>
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ede  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for config</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="k">import</span> <span class="n">Enum</span>
+
+<div class="viewcode-block" id="DataType"><a class="viewcode-back" href="../config.html#config.DataType">[docs]</a><span class="k">class</span> <span class="nc">DataType</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">chemistry</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">precipitation</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">water_level</span> <span class="o">=</span> <span class="mi">3</span></div>
+
+<span class="n">LOCAL_SERVER</span> <span class="o">=</span> <span class="s1">&#39;waterloo&#39;</span>
+<span class="k">if</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span> <span class="o">==</span> <span class="n">LOCAL_SERVER</span><span class="p">:</span>
+    <span class="n">SQL_CONNECT_STRING</span> <span class="o">=</span> <span class="s1">&#39;mysql://root:password@localhost/envdata&#39;</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">SQL_CONNECT_STRING</span> <span class="o">=</span> <span class="s1">&#39;mysql://root:password63@terra-1.cxudpg3pe6ie.us-east-2.rds.amazonaws.com/envdata&#39;</span>
+
+<span class="n">dict_menu_filter_type</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;Info&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s2">&quot;Station information&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;Parameters information&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">&quot;Plotting&quot;</span><span class="p">:</span> <span class="mi">3</span>
+<span class="p">}</span>
+
+<span class="n">dict_menu_menu_view</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;Info&quot;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;Station information&quot;</span><span class="p">:</span> <span class="s1">&#39;v_stations&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;Parameters information&quot;</span><span class="p">:</span> <span class="s1">&#39;v_parameters&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;Plotting&quot;</span><span class="p">:</span> <span class="s1">&#39;v_samples&#39;</span>
+<span class="p">}</span>
+
+<span class="n">MAPBOX_STYLE</span> <span class="o">=</span> <span class="s2">&quot;mapbox://styles/mapbox/light-v10&quot;</span>
+<span class="n">GRADIENT</span> <span class="o">=</span> <span class="s1">&#39;blue-green&#39;</span>
+<span class="n">FILTER_TYPE_STATION</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">FILTER_TYPE_PARAMETER</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">FILTER_TYPE_PLOT</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">USER_MANUAL_LINK</span> <span class="o">=</span> <span class="s1">&#39;https://ede.readthedocs.io/en/latest/&#39;</span>
+<span class="n">HELP_ICON</span> <span class="o">=</span> <span class="s1">&#39;https://img.icons8.com/offices/30/000000/help.png&#39;</span>
+<span class="n">YEAR_COLUMN</span> <span class="o">=</span> <span class="s1">&#39;year&#39;</span>
+<span class="n">MONTH_COLUMN</span> <span class="o">=</span> <span class="s1">&#39;month&#39;</span>
+<span class="n">DAY_COLUMN</span> <span class="o">=</span> <span class="s1">&#39;day&#39;</span>
+<span class="n">SEASON_COLUMN</span> <span class="o">=</span> <span class="s1">&#39;season&#39;</span>
+<span class="n">PAR_NAME_COLUMN</span> <span class="o">=</span> <span class="s1">&#39;parameter_name&#39;</span>
+<span class="n">PAR_LABEL_COLUMN</span> <span class="o">=</span> <span class="s1">&#39;label&#39;</span>
+<span class="n">PAR_UNIT_COLUMN</span> <span class="o">=</span> <span class="s1">&#39;unit&#39;</span>
+<span class="n">SAMPLE_DATE_COLUMN</span> <span class="o">=</span> <span class="s1">&#39;sample_date&#39;</span>
+<span class="n">STATION_NAME_COLUMN</span> <span class="o">=</span> <span class="s1">&#39;station_name&#39;</span>
+<span class="n">LONGITUDE_COLUMN</span> <span class="o">=</span> <span class="s1">&#39;lon&#39;</span>
+<span class="n">LATITUDE_COLUMN</span> <span class="o">=</span> <span class="s1">&#39;lat&#39;</span>
+<span class="n">VALUES_VALUE_COLUMN</span> <span class="o">=</span> <span class="s1">&#39;calc_value&#39;</span>
+<span class="n">AQUIFER_TYPE_COLUMN</span> <span class="o">=</span> <span class="s1">&#39;aquifer_type&#39;</span>
+<span class="n">VALUES_SAMPLENO_COLUMN</span> <span class="o">=</span> <span class="s1">&#39;sample_number&#39;</span>
+<span class="n">LOGO_REFERENCE</span> <span class="o">=</span> <span class="s1">&#39;https://github.com/lcalmbach/ede/blob/master/ede/static/images/flask.png?raw=true&#39;</span>
+<span class="c1"># database settings, parameter and column mapping</span>
+<span class="n">STATION_SUMMARY_TABLE_COLUMNS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;station_name&#39;</span><span class="p">,</span> <span class="s1">&#39;aquifer_lithology&#39;</span><span class="p">,</span> <span class="s1">&#39;stratigraphy&#39;</span><span class="p">,</span> <span class="s1">&#39;well_depth&#39;</span><span class="p">,</span> <span class="s1">&#39;screen_hole&#39;</span><span class="p">,</span> <span class="s1">&#39;first_year&#39;</span><span class="p">,</span> <span class="s1">&#39;last_year&#39;</span><span class="p">,</span> <span class="s1">&#39;number_of_samples&#39;</span><span class="p">]</span>
+<span class="n">STATIONS_ALL_VIEW</span> <span class="o">=</span> <span class="s1">&#39;v_stations_all&#39;</span>
+<span class="n">SAMPLES_ALL_VIEW</span> <span class="o">=</span> <span class="s1">&#39;v_samples&#39;</span>
+<span class="n">VALUES_ALL_VIEW</span> <span class="o">=</span> <span class="s1">&#39;v_values_all&#39;</span>
+<span class="n">PARAMETERS_ALL_VIEW</span> <span class="o">=</span> <span class="s1">&#39;v_parameters_all&#39;</span>
+<span class="n">OPACITY</span> <span class="o">=</span> <span class="mf">0.3</span>
+<span class="n">plot_width</span> <span class="o">=</span> <span class="mi">600</span>
+<span class="n">plot_height</span> <span class="o">=</span> <span class="mi">400</span>
+<span class="n">text_path</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;static/text/&#39;</span>
+<span class="n">images_path</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;static/images/&#39;</span>
+<span class="n">css_path</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;static/css/&#39;</span>
+<span class="n">data_path</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;static/data/&#39;</span>
+
+<span class="n">chem_data_file</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;chemistry.txt&#39;</span>
+<span class="n">parameters_data_file</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;parameters.txt&#39;</span>
+<span class="n">precipitation_data_file</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;precipitation.txt&#39;</span>
+<span class="n">samples_data_file</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;samples.txt&#39;</span>
+<span class="n">water_levels_data_file</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;waterlevels.txt&#39;</span>
+<span class="n">stations_data_file</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;PGMN_WELLS_NAD83.txt&#39;</span>
+
+<span class="n">version</span> <span class="o">=</span> <span class="s1">&#39;0.0.1&#39;</span>
+<span class="n">data_last_modified</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;March 14, 2017&#39;</span>
+
+<span class="n">season_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;spring&#39;</span><span class="p">,</span><span class="s1">&#39;summer&#39;</span><span class="p">,</span><span class="s1">&#39;autumn&#39;</span><span class="p">,</span><span class="s1">&#39;winter&#39;</span><span class="p">]</span>
+<span class="n">plot_type_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;bar chart&#39;</span><span class="p">,</span><span class="s1">&#39;box plot&#39;</span><span class="p">,</span><span class="s1">&#39;scatter plot&#39;</span><span class="p">,</span><span class="s1">&#39;time series&#39;</span><span class="p">,</span><span class="s1">&#39;histogram&#39;</span><span class="p">,</span><span class="s1">&#39;map&#39;</span><span class="p">]</span> <span class="c1">#, &#39;schoeller&#39;, ,</span>
+<span class="n">group_by_options</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;none&#39;</span><span class="p">,</span><span class="s1">&#39;station_name&#39;</span><span class="p">,</span><span class="s1">&#39;year&#39;</span><span class="p">,</span><span class="s1">&#39;season&#39;</span><span class="p">,</span> <span class="s1">&#39;aquifer_type&#39;</span><span class="p">]</span>
+<span class="n">group_by_display</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;none&#39;</span><span class="p">:</span> <span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="s1">&#39;station_name&#39;</span><span class="p">:</span> <span class="s1">&#39;station&#39;</span><span class="p">,</span><span class="s1">&#39;year&#39;</span><span class="p">:</span> <span class="s1">&#39;year&#39;</span><span class="p">,</span> <span class="s1">&#39;season&#39;</span><span class="p">:</span> <span class="s1">&#39;season&#39;</span><span class="p">,</span> <span class="s1">&#39;aquifer_type&#39;</span><span class="p">:</span> <span class="s1">&#39;aquifer type&#39;</span><span class="p">}</span>
+<span class="n">months_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;&lt;all&gt;&#39;</span><span class="p">,</span><span class="s1">&#39;1&#39;</span><span class="p">,</span><span class="s1">&#39;2&#39;</span><span class="p">,</span><span class="s1">&#39;3&#39;</span><span class="p">,</span><span class="s1">&#39;4&#39;</span><span class="p">,</span><span class="s1">&#39;5&#39;</span><span class="p">,</span><span class="s1">&#39;6&#39;</span><span class="p">,</span><span class="s1">&#39;7&#39;</span><span class="p">,</span><span class="s1">&#39;8&#39;</span><span class="p">,</span><span class="s1">&#39;9&#39;</span><span class="p">,</span><span class="s1">&#39;10&#39;</span><span class="p">,</span><span class="s1">&#39;11&#39;</span><span class="p">,</span><span class="s1">&#39;12&#39;</span><span class="p">]</span>
+<span class="n">menu_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Info&#39;</span><span class="p">,</span> <span class="s1">&#39;Station information&#39;</span><span class="p">,</span> <span class="s1">&#39;Parameters information&#39;</span><span class="p">,</span> <span class="s1">&#39;Plotting&#39;</span><span class="p">]</span>  <span class="c1"># &#39;Help&#39;, , &#39;Settings&#39;</span>
+<span class="n">color_schema</span> <span class="o">=</span> <span class="s2">&quot;set1&quot;</span> <span class="c1"># https://vega.github.io/vega/docs/schemes/#reference</span>
+<span class="n">symbol_size</span> <span class="o">=</span> <span class="mi">60</span>
+<span class="n">google_link</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;https://drive.google.com/open?id=12WTf4bepPi9u6rtFDSMXIiBCOOzcz09p&amp;usp=sharing&#39;</span>
+
+<span class="n">STATION_WIDGET_NAME</span> <span class="o">=</span> <span class="s1">&#39;Station&#39;</span>
+
+<span class="n">DEFAULT_DATA_COLLECTION_ID</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># pgmn</span>
+<span class="n">DATA_COLLECTION_NAME_COLUMN</span> <span class="o">=</span> <span class="s1">&#39;name_long&#39;</span>
+<span class="n">DATASET_NAME_COLUMN</span> <span class="o">=</span> <span class="s1">&#39;name&#39;</span>
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ede  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Lukas Calmbach.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.1.
+    </div>
+  </body>
+</html>

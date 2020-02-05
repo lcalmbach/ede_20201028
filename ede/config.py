@@ -1,10 +1,12 @@
 import socket
 from enum import Enum
 
+
 class DataType(Enum):
     chemistry = 1
     precipitation = 2
     water_level = 3
+
 
 LOCAL_SERVER = 'waterloo'
 if socket.gethostname() == LOCAL_SERVER:
@@ -19,19 +21,15 @@ dict_menu_filter_type = {
     "Plotting": 3
 }
 
-dict_menu_menu_view = {
-    "Info": '',
-    "Station information": 'v_stations',
-    "Parameters information": 'v_parameters',
-    "Plotting": 'todo'
-}
-
-FILTER_TYPE_STATION = 1
-FILTER_TYPE_PARAMETER = 2
-FILTER_TYPE_PLOT = 3
-USER_MANUAL_LINK = 'https://ede.readthedocs.io/en/latest/'
-HELP_ICON = 'https://img.icons8.com/offices/30/000000/help.png'
-YEAR_COLUMN = 'year'
+MAP_LEGEND_SYMBOL_SIZE: int = 10
+MAPBOX_STYLE: str = "mapbox://styles/mapbox/light-v10"
+GRADIENT: str = 'blue-green'
+FILTER_TYPE_STATION: int = 1
+FILTER_TYPE_PARAMETER: int = 2
+FILTER_TYPE_PLOT: int = 3
+USER_MANUAL_LINK: str = 'https://ede.readthedocs.io/en/latest/'
+HELP_ICON: str = 'https://img.icons8.com/offices/30/000000/help.png'
+YEAR_COLUMN: str = 'year'
 MONTH_COLUMN = 'month'
 DAY_COLUMN = 'day'
 SEASON_COLUMN = 'season'
@@ -40,6 +38,7 @@ PAR_LABEL_COLUMN = 'label'
 PAR_UNIT_COLUMN = 'unit'
 SAMPLE_DATE_COLUMN = 'sample_date'
 STATION_NAME_COLUMN = 'station_name'
+DEPTH_CATEGORY_COLUMN = 'depth_category'
 LONGITUDE_COLUMN = 'lon'
 LATITUDE_COLUMN = 'lat'
 VALUES_VALUE_COLUMN = 'calc_value'
@@ -47,9 +46,10 @@ AQUIFER_TYPE_COLUMN = 'aquifer_type'
 VALUES_SAMPLENO_COLUMN = 'sample_number'
 LOGO_REFERENCE = 'https://github.com/lcalmbach/ede/blob/master/ede/static/images/flask.png?raw=true'
 # database settings, parameter and column mapping
-STATION_SUMMARY_TABLE_COLUMNS = ['station_name', 'aquifer_lithology', 'stratigraphy', 'well_depth', 'screen_hole', 'first_year', 'last_year', 'number_of_samples']
+STATION_SUMMARY_TABLE_COLUMNS = ['station_name', 'aquifer_lithology', 'stratigraphy', 'well_depth', 'screen_hole',
+                                 'first_year', 'last_year', 'number_of_samples']
 STATIONS_ALL_VIEW = 'v_stations_all'
-SAMPLES_ALL_VIEW = 'v_samples_all'
+SAMPLES_ALL_VIEW = 'v_samples'
 VALUES_ALL_VIEW = 'v_values_all'
 PARAMETERS_ALL_VIEW = 'v_parameters_all'
 OPACITY = 0.3
@@ -70,19 +70,20 @@ stations_data_file = r'PGMN_WELLS_NAD83.txt'
 version = '0.0.1'
 data_last_modified = r'March 14, 2017'
 
-season_list = ['spring','summer','autumn','winter']
-plot_type_list = ['bar chart','box plot','scatter plot','time series','histogram','map'] #, 'schoeller', ,
-group_by_options = ['none','station_name','year','season', 'aquifer_type']
-group_by_display = {'none': 'none', 'station_name': 'station','year': 'year', 'season': 'season', 'aquifer_type': 'aquifer type'}
-months_list = ['<all>','1','2','3','4','5','6','7','8','9','10','11','12']
+season_list = ['spring', 'summer', 'autumn', 'winter']
+plot_type_list = ['bar chart', 'box plot', 'scatter plot', 'time series', 'histogram', 'map']  # , 'schoeller',
+group_by_options = ['none', 'station_name', 'year', 'season', 'aquifer_type', 'depth_category', 'township', 'county']
+group_by_display = {'none': 'none', 'station_name': 'station', 'year': 'year', 'season': 'season',
+                    'aquifer_type': 'aquifer type', 'depth_category': 'well depth category',
+                    'township': 'township', 'county': 'county'}
+months_list = ['<all>', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
 menu_list = ['Info', 'Station information', 'Parameters information', 'Plotting']  # 'Help', , 'Settings'
-color_schema = "set1" # https://vega.github.io/vega/docs/schemes/#reference
+color_schema = "set1"  # https://vega.github.io/vega/docs/schemes/#reference
 symbol_size = 60
 google_link = r'https://drive.google.com/open?id=12WTf4bepPi9u6rtFDSMXIiBCOOzcz09p&usp=sharing'
 
 STATION_WIDGET_NAME = 'Station'
 
-DEFAULT_DATA_COLLECTION_ID = 1 # pgmn
+DEFAULT_DATA_COLLECTION_ID = 1  # pgmn
 DATA_COLLECTION_NAME_COLUMN = 'name_long'
 DATASET_NAME_COLUMN = 'name'
-

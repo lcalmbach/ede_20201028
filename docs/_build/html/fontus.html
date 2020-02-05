@@ -1,0 +1,615 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>fontus module &#8212; ede  documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="tools module" href="tools.html" />
+    <link rel="prev" title="database module" href="database.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tools.html" title="tools module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="database.html" title="database module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ede  documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-fontus">
+<span id="fontus-module"></span><h1>fontus module<a class="headerlink" href="#module-fontus" title="Permalink to this headline">¶</a></h1>
+<p>This module contains the classes fontus, stations, parameters and plotting</p>
+<dl class="class">
+<dt id="fontus.Filter">
+<em class="property">class </em><code class="sig-prename descclassname">fontus.</code><code class="sig-name descname">Filter</code><span class="sig-paren">(</span><em class="sig-param">parent</em>, <em class="sig-param">df_fields: pandas.core.frame.DataFrame</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class holds all filter control
+filter_stations_cb       if set, selected station attributes are shown to build a station filter
+station_list  a station multi list allowing to select multiple stations
+station_list
+filter_by_year_cb
+filter_year_slider
+filter_season_list
+x_list            x parameter
+x_list            y parameter</p>
+<dl class="class">
+<dt id="fontus.Filter.FilterItem">
+<em class="property">class </em><code class="sig-name descname">FilterItem</code><span class="sig-paren">(</span><em class="sig-param">parent</em>, <em class="sig-param">row</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Filter.FilterItem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Filter.FilterItem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Filter item is used to dynamically generate UI station and parameter filter controls values are stored in
+table list_field.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Filter.append_parameter_filter">
+<code class="sig-name descname">append_parameter_filter</code><span class="sig-paren">(</span><em class="sig-param">criteria</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Filter.append_parameter_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Filter.append_parameter_filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends a filter for x and y parameters for plots.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>criteria</strong> – where clause for sql statement</p>
+</dd>
+<dt class="field-even">Return result</dt>
+<dd class="field-even"><p>initial criteria with additional filter for x and y parameter for scatter plots
+and y parameter only for most other plot types</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Filter.fill_controls">
+<code class="sig-name descname">fill_controls</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Filter.fill_controls"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Filter.fill_controls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fills the dictionary __station_fields_multilist with all filter options for each menu item.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Filter.get_expression">
+<em class="property">property </em><code class="sig-name descname">get_expression</code><a class="headerlink" href="#fontus.Filter.get_expression" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a filter expression depending on the menu context.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Filter.render_menu">
+<code class="sig-name descname">render_menu</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Filter.render_menu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Filter.render_menu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renders the filter menu. The filters_multilist is a list of filter objects read from the database
+each having a labal, default values und an options list, including all distinct values that should appear in the
+options list in the select box control for this filter.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Filter.station_fields_multilist">
+<em class="property">property </em><code class="sig-name descname">station_fields_multilist</code><a class="headerlink" href="#fontus.Filter.station_fields_multilist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the dictionary of filter controls for station filters. For example if the user selects aquifer and
+county from the list of available filterable fields, then two select boxes are shown to the user.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fontus.Fontus">
+<em class="property">class </em><code class="sig-prename descclassname">fontus.</code><code class="sig-name descname">Fontus</code><a class="reference internal" href="_modules/fontus.html#Fontus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Fontus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class holds data on: 
+- the database connection
+- the available data collection in the database
+- the current data collection
+- the available datasets in the current data collectin
+- the current dataset</p>
+<dl class="method">
+<dt id="fontus.Fontus.curr_data_collection">
+<em class="property">property </em><code class="sig-name descname">curr_data_collection</code><a class="headerlink" href="#fontus.Fontus.curr_data_collection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Data frame holding current data collection record</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.data_collection_display">
+<em class="property">property </em><code class="sig-name descname">data_collection_display</code><a class="headerlink" href="#fontus.Fontus.data_collection_display" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.data_collection_id">
+<em class="property">property </em><code class="sig-name descname">data_collection_id</code><a class="headerlink" href="#fontus.Fontus.data_collection_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.data_collection_options">
+<em class="property">property </em><code class="sig-name descname">data_collection_options</code><a class="headerlink" href="#fontus.Fontus.data_collection_options" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of ids from data_collection table. the list is used to fill the data collection selection control</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.data_type">
+<em class="property">property </em><code class="sig-name descname">data_type</code><a class="headerlink" href="#fontus.Fontus.data_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns data type for selected dataset:
+1:  chemistry
+2:  precipitation
+3:  water levels</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.dataset_display">
+<em class="property">property </em><code class="sig-name descname">dataset_display</code><a class="headerlink" href="#fontus.Fontus.dataset_display" title="Permalink to this definition">¶</a></dt>
+<dd><p>dictionary of dataset id:name pairs for current data collection</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.dataset_id">
+<em class="property">property </em><code class="sig-name descname">dataset_id</code><a class="headerlink" href="#fontus.Fontus.dataset_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns the dataset_id</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.dataset_options">
+<em class="property">property </em><code class="sig-name descname">dataset_options</code><a class="headerlink" href="#fontus.Fontus.dataset_options" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of ids from dataset table. the list is used to fill the dataset selection control</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.dfAll_data_collections">
+<em class="property">property </em><code class="sig-name descname">dfAll_data_collections</code><a class="headerlink" href="#fontus.Fontus.dfAll_data_collections" title="Permalink to this definition">¶</a></dt>
+<dd><p>data frame holding all available data collection in the database</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.filter">
+<em class="property">property </em><code class="sig-name descname">filter</code><a class="headerlink" href="#fontus.Fontus.filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object holding all filter settings</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.first_year">
+<em class="property">property </em><code class="sig-name descname">first_year</code><a class="headerlink" href="#fontus.Fontus.first_year" title="Permalink to this definition">¶</a></dt>
+<dd><p>Year of first sample collection</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.get_values">
+<code class="sig-name descname">get_values</code><span class="sig-paren">(</span><em class="sig-param">criteria</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Fontus.get_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Fontus.get_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a data frame with all values matching the criteria</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.google_maps_url">
+<em class="property">property </em><code class="sig-name descname">google_maps_url</code><a class="headerlink" href="#fontus.Fontus.google_maps_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.has_google_maps_url">
+<code class="sig-name descname">has_google_maps_url</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Fontus.has_google_maps_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Fontus.has_google_maps_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.has_markers">
+<em class="property">property </em><code class="sig-name descname">has_markers</code><a class="headerlink" href="#fontus.Fontus.has_markers" title="Permalink to this definition">¶</a></dt>
+<dd><p>If True data points in plots will be shown as circles</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.last_year">
+<em class="property">property </em><code class="sig-name descname">last_year</code><a class="headerlink" href="#fontus.Fontus.last_year" title="Permalink to this definition">¶</a></dt>
+<dd><p>Year of most recent sample collection</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.menu">
+<em class="property">property </em><code class="sig-name descname">menu</code><a class="headerlink" href="#fontus.Fontus.menu" title="Permalink to this definition">¶</a></dt>
+<dd><p>menu selection: info, plotting, parameters info, stations info</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.observations_view">
+<em class="property">property </em><code class="sig-name descname">observations_view</code><a class="headerlink" href="#fontus.Fontus.observations_view" title="Permalink to this definition">¶</a></dt>
+<dd><p>return view name for observations of the selected dataset</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.parameter_view">
+<em class="property">property </em><code class="sig-name descname">parameter_view</code><a class="headerlink" href="#fontus.Fontus.parameter_view" title="Permalink to this definition">¶</a></dt>
+<dd><p>return view name for the parameters tble of the selected dataset</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.parameters">
+<em class="property">property </em><code class="sig-name descname">parameters</code><a class="headerlink" href="#fontus.Fontus.parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameters object associated with current data collection</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.plots">
+<em class="property">property </em><code class="sig-name descname">plots</code><a class="headerlink" href="#fontus.Fontus.plots" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a plots objects which is used to render plots and plots related
+UI controls
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.render_about_text">
+<code class="sig-name descname">render_about_text</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Fontus.render_about_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Fontus.render_about_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renders info on the selected data collection composed of: a header image, some explenatory text, a metadatatable for the
+data collection and metadata for each dataset included in the data collection</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.render_help">
+<code class="sig-name descname">render_help</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Fontus.render_help"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Fontus.render_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renders a help icon linking to the &lt;read the docs&gt; user manual</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.show_url_list">
+<code class="sig-name descname">show_url_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Fontus.show_url_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Fontus.show_url_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>In table refererence url references realted to each data collection can be defined and rendered with this function</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.station_main_display_view">
+<em class="property">property </em><code class="sig-name descname">station_main_display_view</code><a class="headerlink" href="#fontus.Fontus.station_main_display_view" title="Permalink to this definition">¶</a></dt>
+<dd><p>sql string querying columns for station display view, menu item stations info</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.station_samples_display_view">
+<em class="property">property </em><code class="sig-name descname">station_samples_display_view</code><a class="headerlink" href="#fontus.Fontus.station_samples_display_view" title="Permalink to this definition">¶</a></dt>
+<dd><p>sql string querying columns for station display view, menu item stations info</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.station_years_display_view">
+<em class="property">property </em><code class="sig-name descname">station_years_display_view</code><a class="headerlink" href="#fontus.Fontus.station_years_display_view" title="Permalink to this definition">¶</a></dt>
+<dd><p>sql string querying columns for station display view, menu item stations info</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Fontus.stations">
+<em class="property">property </em><code class="sig-name descname">stations</code><a class="headerlink" href="#fontus.Fontus.stations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stations object associated with current data collection</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fontus.Parameters">
+<em class="property">class </em><code class="sig-prename descclassname">fontus.</code><code class="sig-name descname">Parameters</code><span class="sig-paren">(</span><em class="sig-param">parent</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="fontus.Parameters.dfParameters">
+<em class="property">property </em><code class="sig-name descname">dfParameters</code><a class="headerlink" href="#fontus.Parameters.dfParameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fontus.Parameters.get_map_table">
+<code class="sig-name descname">get_map_table</code><span class="sig-paren">(</span><em class="sig-param">parameter</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Parameters.get_map_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Parameters.get_map_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>bla</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Parameters.get_parameter_summary_table">
+<code class="sig-name descname">get_parameter_summary_table</code><span class="sig-paren">(</span><em class="sig-param">criteria</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Parameters.get_parameter_summary_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Parameters.get_parameter_summary_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a DataFrame holding summary values for samples matching the specified
+in: 
+criteria: where clause of sql statement</p>
+<p>out
+DataFrame with summary information on parameter and station</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Parameters.get_parameter_table">
+<code class="sig-name descname">get_parameter_table</code><span class="sig-paren">(</span><em class="sig-param">criteria</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Parameters.get_parameter_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Parameters.get_parameter_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a DataFrame holding summary values for samples matching the specified
+in: 
+criteria: where clause of sql statement</p>
+<p>out
+DataFrame with summary information on parameter and station</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Parameters.get_value">
+<code class="sig-name descname">get_value</code><span class="sig-paren">(</span><em class="sig-param">parameter</em>, <em class="sig-param">field</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Parameters.get_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Parameters.get_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a metadata value from the parameter table for a specified parameter
+in: parameter id</p>
+<blockquote>
+<div><p>field name</p>
+</div></blockquote>
+<p>out: metadata value for parameter id</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Parameters.parameters_display">
+<em class="property">property </em><code class="sig-name descname">parameters_display</code><a class="headerlink" href="#fontus.Parameters.parameters_display" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fontus.Parameters.parameters_options">
+<em class="property">property </em><code class="sig-name descname">parameters_options</code><a class="headerlink" href="#fontus.Parameters.parameters_options" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fontus.Parameters.parent">
+<em class="property">property </em><code class="sig-name descname">parent</code><a class="headerlink" href="#fontus.Parameters.parent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fontus.Parameters.refresh_options">
+<code class="sig-name descname">refresh_options</code><span class="sig-paren">(</span><em class="sig-param">criteria</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Parameters.refresh_options"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Parameters.refresh_options" title="Permalink to this definition">¶</a></dt>
+<dd><p>generates the list of parameters. if a criteria is specified, only parameters matching the criteria are
+used in the list.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Parameters.render_all_parameters_table">
+<code class="sig-name descname">render_all_parameters_table</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Parameters.render_all_parameters_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Parameters.render_all_parameters_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function is invoked, if no parameter filter is set. A single table including the metadata of all parameters
+is shown in the view panel</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Parameters.render_menu">
+<code class="sig-name descname">render_menu</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Parameters.render_menu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Parameters.render_menu" title="Permalink to this definition">¶</a></dt>
+<dd><p>The function renders the sidebar menu for the parameters option menu item</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Parameters.render_multi_parameters_table">
+<code class="sig-name descname">render_multi_parameters_table</code><span class="sig-paren">(</span><em class="sig-param">lis_par</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Parameters.render_multi_parameters_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Parameters.render_multi_parameters_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function is invoked, if the parameter filter is set and multiple parameters are selected.
+The following tables are shown:
+* parameters metadata
+* parameter value summary per station</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Parameters.render_single_parameters_table">
+<code class="sig-name descname">render_single_parameters_table</code><span class="sig-paren">(</span><em class="sig-param">lis</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Parameters.render_single_parameters_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Parameters.render_single_parameters_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function is invoked, if the parameter filter is set and multiple parameters are selected.
+The following tables are shown:
+* parameters metadata
+* parameter value summary per station
+* a map</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fontus.Plots">
+<em class="property">class </em><code class="sig-prename descclassname">fontus.</code><code class="sig-name descname">Plots</code><span class="sig-paren">(</span><em class="sig-param">parent</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Plots"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Plots" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class is used to generate plots and render plot related UI controls</p>
+<dl class="method">
+<dt id="fontus.Plots.get_criteria_expression">
+<code class="sig-name descname">get_criteria_expression</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Plots.get_criteria_expression"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Plots.get_criteria_expression" title="Permalink to this definition">¶</a></dt>
+<dd><p>creates the sql where clause for the set filter controls</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Plots.get_label">
+<code class="sig-name descname">get_label</code><span class="sig-paren">(</span><em class="sig-param">par_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Plots.get_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Plots.get_label" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fontus.Plots.plot">
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">title</em>, <em class="sig-param">criteria</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Plots.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Plots.plot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fontus.Plots.plot_bar_h">
+<code class="sig-name descname">plot_bar_h</code><span class="sig-paren">(</span><em class="sig-param">title: str</em>, <em class="sig-param">df: pandas.core.frame.DataFrame</em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="_modules/fontus.html#Plots.plot_bar_h"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Plots.plot_bar_h" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fontus.Plots.plot_bar_v">
+<code class="sig-name descname">plot_bar_v</code><span class="sig-paren">(</span><em class="sig-param">title: str</em>, <em class="sig-param">df: pandas.core.frame.DataFrame</em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="_modules/fontus.html#Plots.plot_bar_v"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Plots.plot_bar_v" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fontus.Plots.plot_boxplot">
+<code class="sig-name descname">plot_boxplot</code><span class="sig-paren">(</span><em class="sig-param">title: str</em>, <em class="sig-param">df: pandas.core.frame.DataFrame</em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="_modules/fontus.html#Plots.plot_boxplot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Plots.plot_boxplot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fontus.Plots.plot_histogram">
+<code class="sig-name descname">plot_histogram</code><span class="sig-paren">(</span><em class="sig-param">title: str</em>, <em class="sig-param">df: pandas.core.frame.DataFrame</em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="_modules/fontus.html#Plots.plot_histogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Plots.plot_histogram" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fontus.Plots.plot_map">
+<em class="property">static </em><code class="sig-name descname">plot_map</code><span class="sig-paren">(</span><em class="sig-param">title: str</em>, <em class="sig-param">df: pandas.core.frame.DataFrame</em>, <em class="sig-param">layer_type: str = 'HexagonLayer'</em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="_modules/fontus.html#Plots.plot_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Plots.plot_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a map plot</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>layer_type</strong> – HexagonLayer or ScatterplotLayer</p></li>
+<li><p><strong>title</strong> – title of plot</p></li>
+<li><p><strong>df</strong> – dataframe with data to be plotted</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Plots.plot_scatter">
+<code class="sig-name descname">plot_scatter</code><span class="sig-paren">(</span><em class="sig-param">title: str</em>, <em class="sig-param">df: pandas.core.frame.DataFrame</em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="_modules/fontus.html#Plots.plot_scatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Plots.plot_scatter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fontus.Plots.plot_schoeller">
+<code class="sig-name descname">plot_schoeller</code><span class="sig-paren">(</span><em class="sig-param">title: str</em>, <em class="sig-param">df: pandas.core.frame.DataFrame</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Plots.plot_schoeller"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Plots.plot_schoeller" title="Permalink to this definition">¶</a></dt>
+<dd><p>todo: schoeller plot</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Plots.plot_time_series">
+<code class="sig-name descname">plot_time_series</code><span class="sig-paren">(</span><em class="sig-param">title: str</em>, <em class="sig-param">df: pandas.core.frame.DataFrame</em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="_modules/fontus.html#Plots.plot_time_series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Plots.plot_time_series" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots a time series plot. input: title: plot title, df: datafram with the data, ctrl: list of GUI controls</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Plots.plot_type">
+<em class="property">property </em><code class="sig-name descname">plot_type</code><a class="headerlink" href="#fontus.Plots.plot_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fontus.Plots.render_controls">
+<code class="sig-name descname">render_controls</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Plots.render_controls"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Plots.render_controls" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fontus.Plots.render_menu">
+<code class="sig-name descname">render_menu</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Plots.render_menu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Plots.render_menu" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="fontus.Plots.xpar">
+<em class="property">property </em><code class="sig-name descname">xpar</code><a class="headerlink" href="#fontus.Plots.xpar" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns the x parameter for plots having a specified x axis</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Plots.ypar">
+<em class="property">property </em><code class="sig-name descname">ypar</code><a class="headerlink" href="#fontus.Plots.ypar" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns the y parameter for a plot</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="fontus.Stations">
+<em class="property">class </em><code class="sig-prename descclassname">fontus.</code><code class="sig-name descname">Stations</code><span class="sig-paren">(</span><em class="sig-param">parent</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Stations"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Stations" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Holds all information on the stations related to the current dataset</p>
+<dl class="method">
+<dt id="fontus.Stations.draw_map">
+<code class="sig-name descname">draw_map</code><span class="sig-paren">(</span><em class="sig-param">station_name</em>, <em class="sig-param">criteria</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Stations.draw_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Stations.draw_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draws a map of all selected stations. If no filter is set, all stations are shown.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Stations.get_samples">
+<code class="sig-name descname">get_samples</code><span class="sig-paren">(</span><em class="sig-param">sqlstr</em>, <em class="sig-param">criteria</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Stations.get_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Stations.get_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a DataFrame of samples as a DataFrame where column 0 is the field name and column 1 is its value</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Stations.get_table">
+<code class="sig-name descname">get_table</code><span class="sig-paren">(</span><em class="sig-param">criteria</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Stations.get_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Stations.get_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the metadata for all stations, if no station is selected, or the selected stations.
+:param criteria:
+:return: table as DataFrame</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Stations.get_values">
+<code class="sig-name descname">get_values</code><span class="sig-paren">(</span><em class="sig-param">criteria</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Stations.get_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Stations.get_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a data frame with all values matching the criteria</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Stations.get_yearly_sample_summary_table">
+<code class="sig-name descname">get_yearly_sample_summary_table</code><span class="sig-paren">(</span><em class="sig-param">criteria</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Stations.get_yearly_sample_summary_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Stations.get_yearly_sample_summary_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a DataFrame with 1 record for every year when samples were collected</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Stations.refresh_options">
+<code class="sig-name descname">refresh_options</code><span class="sig-paren">(</span><em class="sig-param">criteria</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Stations.refresh_options"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Stations.refresh_options" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates the list of stations. if a criteria is specified, only stations matching the criteria are
+used in the list.
+:param criteria: sql where clause</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="fontus.Stations.render_menu">
+<code class="sig-name descname">render_menu</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/fontus.html#Stations.render_menu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#fontus.Stations.render_menu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Renders the station info menu controls and calls the procedures to show tables and a map for all or the
+selected stations.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="database.html"
+                        title="previous chapter">database module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tools.html"
+                        title="next chapter">tools module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/fontus.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tools.html" title="tools module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="database.html" title="database module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ede  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Lukas Calmbach.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.1.
+    </div>
+  </body>
+</html>

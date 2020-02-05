@@ -24,9 +24,9 @@ def init():
     )
 
     
-def get_distinct_values(column_name, table_name, dataset_id):
+def get_distinct_values(column_name, table_name, dataset_id, criteria):
     '''returns a list of unique values from a defined code column'''
-    query = "SELECT {0} FROM {1} where dataset_id = {2} group by {0} order by {0}".format(column_name, table_name, dataset_id)
+    query = "SELECT {0} FROM {1} where dataset_id = {2} {3} {4} group by {0} order by {0}".format(column_name, table_name, dataset_id, (' AND ' if criteria > '' else ''), criteria)
     result = execute_query(query)
     result = result[column_name].tolist()
     return result
