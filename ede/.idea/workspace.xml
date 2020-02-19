@@ -2,12 +2,18 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3ed21686-7c48-4feb-bf0d-5d637fce23ab" name="Default Changelist" comment="Merge branch 'master' of https://github.com/lcalmbach/ede&#10;&#10;# Conflicts:&#10;#&#9;ede_doc/conf.py">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/database.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fontus.py" beforeDir="false" afterPath="$PROJECT_DIR$/fontus.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pydeck5y947dlv.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pydeckxe2gk74l.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test2.py" beforeDir="false" afterPath="$PROJECT_DIR$/test2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tools.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ede_doc/conf.py" beforeDir="false" afterPath="$PROJECT_DIR$/../ede_doc/conf.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ede_doc/conf.py" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,11 +23,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/fontus.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="306">
-              <caret line="692" column="19" selection-start-line="692" selection-start-column="19" selection-end-line="692" selection-end-column="19" />
+            <state relative-caret-position="156">
+              <caret line="1092" column="36" selection-start-line="1092" selection-start-column="36" selection-end-line="1092" selection-end-column="36" />
               <folding>
                 <element signature="e#115#134#0" expanded="true" />
               </folding>
@@ -29,20 +35,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret column="22" selection-start-column="22" selection-end-column="22" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tools.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1122">
-              <caret line="73" selection-start-line="73" selection-end-line="78" selection-end-column="15" />
+            <state relative-caret-position="381">
+              <caret line="145" column="37" lean-forward="true" selection-start-line="145" selection-start-column="37" selection-end-line="145" selection-end-column="37" />
               <folding>
                 <element signature="e#43#62#0" expanded="true" />
               </folding>
@@ -53,8 +50,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/config.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1258">
-              <caret line="75" column="16" selection-start-line="75" selection-end-line="75" selection-end-column="16" />
+            <state relative-caret-position="153">
+              <caret line="54" column="40" selection-start-line="54" selection-start-column="40" selection-end-line="54" selection-end-column="40" />
               <folding>
                 <element signature="e#0#13#0" expanded="true" />
               </folding>
@@ -63,13 +60,58 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/database.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="221">
+              <caret line="13" column="40" selection-start-line="13" selection-start-column="40" selection-end-line="13" selection-end-column="40" />
+              <folding>
+                <element signature="e#0#31#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="136">
+              <caret line="8" column="26" lean-forward="true" selection-start-line="8" selection-start-column="26" selection-end-line="8" selection-end-column="26" />
+              <folding>
+                <element signature="e#0#22#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test2.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="170">
+              <caret line="10" column="17" lean-forward="true" selection-start-line="10" selection-start-column="17" selection-end-line="10" selection-end-column="17" />
+              <folding>
+                <element signature="e#0#22#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/SessionState.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="119">
+              <caret line="7" column="74" lean-forward="true" selection-start-line="7" selection-start-column="20" selection-end-line="7" selection-end-column="74" />
+              <folding>
+                <element signature="e#459#504#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="799">
-              <caret line="51" column="31" selection-start-line="51" selection-start-column="31" selection-end-line="51" selection-end-column="31" />
-              <folding>
-                <element signature="e#318#340#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="-51">
+              <caret line="9" column="19" lean-forward="true" selection-start-line="9" selection-start-column="19" selection-end-line="9" selection-end-column="19" />
             </state>
           </provider>
         </entry>
@@ -78,36 +120,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>v_stations</find>
-      <find>st.write(query</find>
-      <find>st.write(qu</find>
-      <find>get_samples</find>
-      <find>'none</find>
-      <find>get_criteria_expression</find>
-      <find>current_t</find>
-      <find>now()</find>
-      <find>menu(</find>
-      <find>session_menu ==</find>
-      <find>filter:</find>
-      <find>get_value</find>
-      <find>__plot_type</find>
-      <find>get_valu</find>
-      <find>__plot_width</find>
-      <find>st.write(self</find>
-      <find>def menu</find>
-      <find>data</find>
-      <find>station_fields_multilist</find>
-      <find>refresh_options</find>
-      <find>def plot()</find>
-      <find>render_ab</find>
-      <find>depth_category</find>
-      <find>plots:</find>
-      <find>class parameters</find>
-      <find>per station</find>
+      <find>render_cont</find>
+      <find>plot_bar</find>
+      <find>scatter</find>
       <find>plot_scatter</find>
-      <find>session.data_collection_id = st.sidebar</find>
-      <find>fontus:</find>
-      <find>axis set</find>
+      <find>render_control</find>
+      <find>parameters:</find>
+      <find>render_all_parameters_table</find>
+      <find>st.write</find>
+      <find>st.write(crit</find>
+      <find>class parameter</find>
+      <find>class parameters</find>
+      <find>ST.write</find>
+      <find>class filter:</find>
+      <find>class parameters:</find>
+      <find>get_map_table</find>
+      <find>show_data_table</find>
+      <find>values =</find>
+      <find>lambda</find>
+      <find>additional</find>
+      <find>legend</find>
+      <find>plot_map</find>
+      <find>st.write(cri</find>
+      <find>empty</find>
+      <find>filter:</find>
+      <find>st.write(criter</find>
+      <find>def plot(</find>
+      <find>axis leng</find>
+      <find>help</find>
+      <find>plots:</find>
+      <find>show_table</find>
     </findStrings>
     <replaceStrings>
       <replace>&quot;&quot;&quot;</replace>
@@ -118,6 +160,10 @@
       <replace>self.</replace>
       <replace>marker_group_by</replace>
       <replace>plot_height</replace>
+      <replace>_df_filters</replace>
+      <replace>filter_fields_options</replace>
+      <replace>self.__df_all_filter_fields</replace>
+      <replace>dic_filters</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -126,29 +172,22 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
+        <option value="$APPLICATION_CONFIG_DIR$/scratches/scratch.py" />
+        <option value="$PROJECT_DIR$/config.py" />
+        <option value="$PROJECT_DIR$/SessionState.py" />
+        <option value="$PROJECT_DIR$/database.py" />
         <option value="$PROJECT_DIR$/test.py" />
+        <option value="$PROJECT_DIR$/test2.py" />
+        <option value="$PROJECT_DIR$/fontus.py" />
         <option value="$PROJECT_DIR$/app.py" />
         <option value="$PROJECT_DIR$/tools.py" />
-        <option value="$PROJECT_DIR$/config.py" />
-        <option value="$PROJECT_DIR$/fontus.py" />
-      </list>
-    </option>
-  </component>
-  <component name="ProjectConfigurationFiles">
-    <option name="files">
-      <list>
-        <option value="$PROJECT_DIR$/.idea/ede.iml" />
-        <option value="$PROJECT_DIR$/.idea/misc.xml" />
-        <option value="$PROJECT_DIR$/.idea/modules.xml" />
-        <option value="$PROJECT_DIR$/.idea/vcs.xml" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="239" />
-    <option name="y" value="58" />
+    <option name="x" value="117" />
     <option name="width" value="1551" />
-    <option name="height" value="935" />
+    <option name="height" value="974" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -158,7 +197,10 @@
     <panes />
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="Python" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/test.py" />
+    <property name="run.code.analysis.last.selected.profile" value="pProject Default" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="PyConsoleOptionsProvider">
@@ -168,6 +210,11 @@
         <option name="myModuleName" value="ede" />
       </console-settings>
     </option>
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="E:\develop\ede\ede" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -195,20 +242,21 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="239" y="58" width="1551" height="935" extended-state="0" />
+    <frame x="117" y="0" width="1551" height="974" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.08115359" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.47327045" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.47324613" />
       <window_info anchor="bottom" id="Run" order="2" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="8" visible="true" weight="0.33167082" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="8" visible="true" weight="0.31629014" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
       <window_info anchor="bottom" id="Python Console" order="10" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -235,6 +283,17 @@
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" visible="true" weight="0.02481556" />
     </layout-to-restore>
   </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/config.py</url>
+          <line>47</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
   <component name="editorHistoryManager">
     <entry file="file://$USER_HOME$/Envs/altair-env/Lib/site-packages/pandas/core/internals/blocks.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -243,49 +302,89 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/fontus.py">
+    <entry file="file://$APPLICATION_CONFIG_DIR$/scratches/scratch.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="692" column="19" selection-start-line="692" selection-start-column="19" selection-end-line="692" selection-end-column="19" />
+        <state relative-caret-position="187">
+          <caret line="11" column="13" lean-forward="true" selection-start-line="11" selection-start-column="13" selection-end-line="11" selection-end-column="13" />
           <folding>
-            <element signature="e#115#134#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="22" selection-start-column="22" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tools.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1122">
-          <caret line="73" selection-start-line="73" selection-end-line="78" selection-end-column="15" />
-          <folding>
-            <element signature="e#43#62#0" expanded="true" />
+            <element signature="e#0#22#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/config.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1258">
-          <caret line="75" column="16" selection-start-line="75" selection-end-line="75" selection-end-column="16" />
+        <state relative-caret-position="153">
+          <caret line="54" column="40" selection-start-line="54" selection-start-column="40" selection-end-line="54" selection-end-column="40" />
           <folding>
             <element signature="e#0#13#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/database.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="13" column="40" selection-start-line="13" selection-start-column="40" selection-end-line="13" selection-end-column="40" />
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/SessionState.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="7" column="74" lean-forward="true" selection-start-line="7" selection-start-column="20" selection-end-line="7" selection-end-column="74" />
+          <folding>
+            <element signature="e#459#504#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="136">
+          <caret line="8" column="26" lean-forward="true" selection-start-line="8" selection-start-column="26" selection-end-line="8" selection-end-column="26" />
+          <folding>
+            <element signature="e#0#22#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test2.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="10" column="17" lean-forward="true" selection-start-line="10" selection-start-column="17" selection-end-line="10" selection-end-column="17" />
+          <folding>
+            <element signature="e#0#22#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="799">
-          <caret line="51" column="31" selection-start-line="51" selection-start-column="31" selection-end-line="51" selection-end-column="31" />
+        <state relative-caret-position="-51">
+          <caret line="9" column="19" lean-forward="true" selection-start-line="9" selection-start-column="19" selection-end-line="9" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/fontus.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="156">
+          <caret line="1092" column="36" selection-start-line="1092" selection-start-column="36" selection-end-line="1092" selection-end-column="36" />
           <folding>
-            <element signature="e#318#340#0" expanded="true" />
+            <element signature="e#115#134#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tools.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="381">
+          <caret line="145" column="37" lean-forward="true" selection-start-line="145" selection-start-column="37" selection-end-line="145" selection-end-column="37" />
+          <folding>
+            <element signature="e#43#62#0" expanded="true" />
           </folding>
         </state>
       </provider>

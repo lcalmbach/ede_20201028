@@ -1,6 +1,7 @@
-"""This example is a Streamlit implementation of an interactive groundwater quality data app.
-This app allows to explore the Provincial Groundwater Monitoring Network dataset encompassing 
-over XX years of data. The data can be explored using various Altair plot types.
+"""
+ede is a Streamlit implementation of an interactive groundwater quality data app.This app allows to explore the
+Provincial Groundwater Monitoring Network dataset encompassing over XX years of data. The data can be explored
+using various Altair plot types.
 Author: Lukas Calmbach lcalmbach@gmail.com
 """
 
@@ -22,20 +23,18 @@ def info_sideboard():
 
 
 def show_menu():
-    """Renders the radio button menu in the sideboard and calls selected menu item functions."""
+    """Renders the radio button menu in the sidebar and calls selected menu item functions."""
 
-    st.sidebar.markdown(
-        """![logo]({}) <b><span style="color:blue">E</span>nvironmental <span style="color:blue">D</span>ata <span 
-        style="color:blue">E</span>xplorer</b>""".format(cn.LOGO_REFERENCE), unsafe_allow_html=True)
+    text = """![logo]({}) <b><span style="color:blue">E</span>nvironmental <span style="color:blue">D</span>ata <span 
+        style="color:blue">E</span>xplorer</b>""".format(cn.LOGO_REFERENCE)
+    st.sidebar.markdown(text, unsafe_allow_html=True)
     tools.log('session.data_collection_id = st.sidebar, start')
     session.data_collection_id = st.sidebar.selectbox('Select a data collection', session.data_collection_options,
                                                       format_func=lambda x: session.data_collection_display[x])
-    tools.log('session.data_collection_id = st.sidebar, end')
     # only show the dataset selection of there is more than 1 set
     if len(session.dataset_options) > 1:
         session.dataset_id = st.sidebar.selectbox('Select a dataset', session.dataset_options,
                                                   format_func=lambda x: session.dataset_display[x])
-    tools.log('if len(session.dataset_options) > 1:, end')
     # now that the dataset id is set init station and parameter lists
     st.sidebar.header('Menu')
     session.menu = st.sidebar.radio('', cn.menu_list)
@@ -48,9 +47,7 @@ def show_menu():
     elif session.menu == 'Parameters information':
         session.parameters.render_menu()
     elif session.menu == 'Plotting':
-        tools.log('session.menu == Plotting:,start')
         session.plots.render_menu()
-        tools.log('session.menu == Plotting:,end')
     session.render_help()
 
 

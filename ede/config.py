@@ -34,6 +34,7 @@ MONTH_COLUMN = 'month'
 DAY_COLUMN = 'day'
 SEASON_COLUMN = 'season'
 PAR_NAME_COLUMN = 'parameter_name'
+PAR_GROUP_COLUMN = 'parameter_group'
 PAR_LABEL_COLUMN = 'label'
 PAR_UNIT_COLUMN = 'unit'
 SAMPLE_DATE_COLUMN = 'sample_date'
@@ -70,12 +71,15 @@ stations_data_file = r'PGMN_WELLS_NAD83.txt'
 version = '0.0.1'
 data_last_modified = r'March 14, 2017'
 
+stat_line_options = ['none', 'mean', 'median']
+stat_line_options_no_none = ['mean', 'median']
 season_list = ['spring', 'summer', 'autumn', 'winter']
 plot_type_list = ['bar chart', 'box plot', 'scatter plot', 'time series', 'histogram', 'map']  # , 'schoeller',
-group_by_options = ['none', 'station_name', 'year', 'season', 'aquifer_type', 'depth_category', 'township', 'county']
+group_by_options = ['none', 'station_name', 'year', 'season', 'aquifer_type', 'depth_category', 'township', 'county',
+                    'parameter_name']
 group_by_display = {'none': 'none', 'station_name': 'station', 'year': 'year', 'season': 'season',
                     'aquifer_type': 'aquifer type', 'depth_category': 'well depth category',
-                    'township': 'township', 'county': 'county'}
+                    'township': 'township', 'county': 'county', 'parameter_name': 'parameter'}
 months_list = ['<all>', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
 menu_list = ['Info', 'Station information', 'Parameters information', 'Plotting']  # 'Help', , 'Settings'
 color_schema = "set1"  # https://vega.github.io/vega/docs/schemes/#reference

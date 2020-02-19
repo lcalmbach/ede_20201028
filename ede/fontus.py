@@ -11,9 +11,9 @@ import database as db
 import locale
 
 import altair as alt
-import pyperclip as clipboard
 import pydeck as pdk
 import streamlit as st
+from enum import Enum
 
 import config as cn
 import tools
@@ -48,7 +48,7 @@ class Fontus:
         self.__data_collection_id = 0  # init attribute
         tools.log('__data_collection_id = 0, end')
         tools.log('__parent_id = cn.DEFAULT_DATA_COLLECTION_ID, start')
-        self.__parent_id = cn.DEFAULT_DATA_COLLECTION_ID
+        self.parent_id = cn.DEFAULT_DATA_COLLECTION_ID
         tools.log('__parent_id = cn.DEFAULT_DATA_COLLECTION_ID, end')
         self.__plots = Plots(self)
         tools.log('Fontus.__init__, end')
@@ -76,9 +76,7 @@ class Fontus:
         self.__menu = menuitem
         if self.__menu == 'Plotting' and self.__data_type != cn.DataType.chemistry.value:
             self.filter.filters_multilist = ['station']
-
-            if len(self.filter.station_fields_multilist) > 0:
-                self.filter.station_multilist = [self.filter.station_fields_multilist['station'].options[0]]
+            # self.filter.filters_multilist = [self.filter.dic_filters['station'].options[0]]
 
         self.filter.fill_controls()
 
@@ -286,7 +284,7 @@ class Fontus:
 
     def render_about_text(self):
         """ Renders info on the selected data collection composed of: a header image, some explenatory text,
-        a metadatatable for the data collection and metadata for each dataset included in the data collection
+        a metadata table for the data collection and metadata for each dataset included in the data collection.
         """
 
         myid = self.__data_collection_id
@@ -301,7 +299,7 @@ class Fontus:
         st.markdown('* Publisher: {0}'.format(df.at[myid, 'publisher']))
         st.markdown('* Update frequency: {0}'.format(df.at[myid, 'update_frequency']))
         st.markdown('* Geographical coverage: {0}'.format(df.at[myid, 'geographical_coverage']))
-        st.markdown('** Additional information on data collection: **')
+        st.markdown('** Additional information on this data collection: **')
         self.show_url_list()
         st.markdown('---')
         df = self.__dfDatasets
@@ -344,51 +342,41 @@ class Filter:
     x_list            y parameter
     """
 
+    class FilterType(Enum):
+        station = 1
+        parameter = 2
+        values = 3
+
+
     def __init__(self, parent, df_fields: pd.DataFrame):
-        """initializes the filter.
-        :param parent: parent of current object
+        """
+        Initializes the filter.
+
+        :param parent: parent of current object, either Fontus session or plots
         :param df_fields: data frame of filter fields
         """
 
-        self.__parent = parent
-        self.__df_filter_fields = df_fields
-        self.filters_multilist = []
-        self.__station_fields_multilist = dict([])
-        self.__station_field_options = []
-        self.station_multilist = []
-        self.parameter_multilist = []
-        self.parameter_list = 0
-        self.year_slider = []
-        self.season_list = 0
-
+        self.parent = parent
+        self.__df_all_filter_fields = df_fields
+        self.dic_filters = dict([])             # filters defined in table list_field
+        self.filters_multilist = []  # select box holding the fields that can be turned into filters
+        self.filter_fields_options = []         # options for filters multilist: string of values read from list_field
+                                                # table
         self.__station_main_display_view = ''
         self.__station_samples_display_view = ''
         self.__station_years_display_view = ''
 
     def fill_controls(self):
-        """Fills the dictionary __station_fields_multilist with all filter options for each menu item."""
+        """Fills the dictionary dic_filters with all filter options for each menu item."""
 
-        if len(self.__df_filter_fields) > 0:
-            type_id = cn.dict_menu_filter_type[self.__parent.menu]
-            tools.log('dfFilters = self., start')
-            dfFilters = self.__df_filter_fields[(self.__df_filter_fields.type_id == type_id)]
-            tools.log('dfFilters = self., end')
-            dfFilters.set_index('key', inplace=True)
-            tools.log('for row in dfFilters.itertuples, start')
-            for row in dfFilters.itertuples(index=True):
-                tools.log('self.__station_fields_multilist[row[0]], start')
-                self.__station_fields_multilist[row[0]] = self.FilterItem(self.__parent, row)
-                tools.log(row[0])
-                self.__station_field_options.append(row[0])
-            tools.log('fill_controls, end')
+        if len(self.__df_all_filter_fields) > 0:
+            type_id = cn.dict_menu_filter_type[self.parent.menu]
+            _df_filters = self.__df_all_filter_fields[(self.__df_all_filter_fields.type_id == type_id)]
+            _df_filters.set_index('key', inplace=True)
+            for row in _df_filters.itertuples(index=True):
+                self.dic_filters[row[0]] = self.FilterItem(self.parent, row)
+                self.filter_fields_options.append(row[0])
 
-    @property
-    def station_fields_multilist(self):
-        """
-        Returns the dictionary of filter controls for station filters. For example if the user selects aquifer and
-        county from the list of available filterable fields, then two select boxes are shown to the user."""
-
-        return self.__station_fields_multilist
 
     class FilterItem:
         """
@@ -423,25 +411,38 @@ class Filter:
             query = """select distinct value from distinct_value where column_name = '{0}' and dataset_id = {1} 
                 order by value
                 """.format(row[3], parent.dataset_id)
-            tools.log(query + ', start')
             self.options = db.execute_query(query)['value'].tolist()
             tools.log(query + ', end')
 
-    @property
-    def get_expression(self) -> str:
-        """Returns a filter expression depending on the menu context."""
+    def get_expression(self, filt_type: int) -> str:
+        """
+        Returns a filter expression depending on the menu context. For example, if currently the user has specified
+        to filter stations, and has selected 1 or several stations in the newly appearing stations select box, then
+        the criteria will return: dataset_id = X and station_names in (...)
 
-        result = ''
-        for key in self.__station_fields_multilist:
-            item = self.__station_fields_multilist[key]
-            if len(item.value) > 0:
-                lis = tools.get_cs_item_list(item.value, ',', "'")
-                result += '{} {} in ({})'.format((' AND ' if result > '' else ''), item.field, lis)
+        :param filt_type:   station, parameter, or values filter where station filter must only contain station fields,
+                            parameters may only contain parameter_name or group and value filters may include any
+                            fields.
+        :return:            where statement
+        """
 
+        result = 'dataset_id = {}'.format(self.parent.dataset_id)
+        for key in self.dic_filters:
+            # do not filter for the parameter for plots grouped by parameter, as the filter is done by
+            # a loop through all available parameters
+            ok = filt_type == self.FilterType.values or (filt_type == self.FilterType.parameter and key in ('parameter',
+                'parameter_group')) or (filt_type == self.FilterType.station and key not in ('parameter',
+                'parameter_group')) and not (self.parent.plots.is_grouped_by_parameter and key == 'parameter')
+            if ok:
+                item = self.dic_filters[key]
+                if len(item.value) > 0:
+                    lis = tools.get_cs_item_list(item.value, ',', "'")
+                    result += '{} {} in ({})'.format((' AND ' if result > '' else ''), item.field, lis)
         return result
 
     def append_parameter_filter(self, criteria):
-        """Appends a filter for x and y parameters for plots.
+        """
+        Appends a filter for x and y parameters for plots.
 
         :param criteria: where clause for sql statement
 
@@ -451,49 +452,112 @@ class Filter:
 
         result: str = criteria
         # in the plotting mode, parameters must be filtered for null values
-        if self.__parent.menu == "Plotting":
-            if self.__parent.plots.plot_type == 'scatter plot':
-                par_list = tools.get_cs_item_list([self.__parent.plots.xpar, self.__parent.plots.ypar])
-                result += " {} {} in ({})".format((' AND ' if result > '' else ''), 'parameter_id', par_list)
-            else:
-                result += " {} {} = {} AND calc_value is not null".format((' AND ' if result > '' else ''),
-                                                                          'parameter_id', self.__parent.plots.ypar)
-            if self.__parent.plots.plot_type == 'map':
+        if self.parent.menu == "Plotting":
+            if self.parent.plots.plot_type == 'scatter plot':
+                par_list = tools.get_cs_item_list([self.parent.plots.xpar, self.parent.plots.ypar], ',', "'")
+                result += " {} {} in ({})".format((' AND ' if result > '' else ''), cn.PAR_NAME_COLUMN, par_list)
+            elif self.parent.plots.plot_groupby != cn.PAR_NAME_COLUMN:
+                result += " {} {} = '{}' AND calc_value is not null".format((' AND ' if result > '' else ''),
+                                                                          cn.PAR_NAME_COLUMN, self.parent.plots.ypar)
+            if self.parent.plots.plot_type == 'map':
                 result += """ {} lat is not null and lon is not null and not (coalesce(lat,0) = 0 or 
                 coalesce(lon,0) = 0)""".format((' AND ' if result > '' else ''))
+        return result
+
+    def has_parameter_group_filter(self):
+        """
+        checks the parameter_group exists in the filter field options and if it is filled
+
+        :return: true if parameter_group and is filled
+        """
+
+        result = "parameter_group" in self.dic_filters
+        result = result and self.dic_filters['parameter_group'].value
         return result
 
     def render_menu(self):
         """
         Renders the filter menu. The filters_multilist is a list of filter objects read from the database
-        each having a labal, default values und an options list, including all distinct values that should appear in the
+        each having a label, default values und an options list, including all distinct values that should appear in the
         options list in the select box control for this filter.
+        The menu consists of a first multiselect box, where the user can specify, which filters should be set, e.g.
+        location, station, aquifer type etc. For each selected value, a select box will be generated. station and
+        parameter select boxes are special because the options lists may depend on other filters. e.g. 2 filters are
+        specified parameter group and parameter. parameter group is set to inorganic parameters, then the parameters
+        list should only list inorganic parameters. therefore station and parameters select boxes are gneerated first
+        as empty then generated once all information is available.
         """
 
         st.sidebar.markdown('#### Data filters')
+        # select box holding the available filter fields
         self.filters_multilist = st.sidebar.multiselect(label='Filter data by', default=self.filters_multilist,
-                                                        options=self.__station_field_options)
+                                                        options=self.filter_fields_options)
+        # depending on the selected filters fields draw the associated filter select boxes.
+        _requires_stations_options_refresh = False
+        _requires_parameters_options_refresh = False
+        _has_station_filter = False
+        _has_parameter_filter = False
+        _temp_station_filter: str
+        _temp_parameter_filter: str
+        for filt_fld in self.filters_multilist:
+            item = self.dic_filters[filt_fld]
+            if filt_fld == 'station':
+                _has_station_filter = True
+                _temp_station_filter = st.sidebar.empty()
+            elif filt_fld == 'parameter':
+                _has_parameter_filter = True
+                _temp_parameter_filter = st.sidebar.empty()
+            else:
+                item.value = st.sidebar.multiselect(label=item.label, options=item.options)
 
         for filt_fld in self.filters_multilist:
-            item = self.__station_fields_multilist[filt_fld]
-            criteria = self.get_expression
-            if filt_fld == 'station':
-                self.__parent.stations.refresh_options(criteria)
-            elif filt_fld == 'parameter':
-                self.__parent.parameters.refresh_options(criteria)
-            item.value = st.sidebar.multiselect(label=item.label, options=item.options)
+            item = self.dic_filters[filt_fld]
+            if filt_fld == 'parameter' and item.value:
+                _requires_parameters_options_refresh = True
+            elif filt_fld == 'parameter_group' and item.value:
+                _requires_parameters_options_refresh = True
+            else:
+                _requires_stations_options_refresh = True
+
+        # if station parameters were defined as filters, but not the station list itsself, the station options have not
+        # been reduced yet to match the filter, this must be done now. idem for the parameters, if parameter group
+        # were selected.
+
+        if _requires_stations_options_refresh:
+            criteria = self.get_expression(self.FilterType.station)
+            self.parent.stations.refresh_options(criteria)
+        if _requires_parameters_options_refresh:
+            if self.dic_filters['parameter'].value:
+                _par_group = tools.get_cs_item_list(self.dic_filters['parameter'].value, ',', "'")
+                criteria = 'dataset_id = {} and parameter_name in ({})'.format(self.parent.dataset_id, _par_group)
+            else:
+                _par_name_group = tools.get_cs_item_list(self.dic_filters['parameter_group'].value, ',', "'")
+                criteria = criteria = "dataset_id = {} and parameter_group in ({})".format(self.parent.dataset_id,
+                    _par_name_group)
+            self.parent.parameters.refresh_options(criteria)
+        if _has_station_filter:
+            item = self.dic_filters['station']
+            _temp_station_filter = st.sidebar.multiselect(label=item.label, options=item.options)
+            item.value = _temp_station_filter
+        if _has_parameter_filter:
+            item = self.dic_filters['parameter']
+            _temp_parameter_filter = st.sidebar.multiselect(label=item.label, options=item.options)
+            item.value = _temp_parameter_filter
 
 
 class Stations:
-    """Holds all information on the stations related to the current dataset"""
+    """
+    Holds all information on the stations related to the current dataset.
+    """
 
     def __init__(self, parent):
         """
         Initializes the Stations objects holding all functions related to the station selection
+
         :param parent: session object, holding definition of data collection and dataset
         """
 
-        self.__parent = parent
+        self.parent = parent
         if parent.data_type == cn.DataType.chemistry.value:
             self.station_view_name = 'v_stations'
         else:
@@ -503,16 +567,17 @@ class Stations:
         """
         Generates the list of stations. If a criteria is specified, only stations matching the criteria are
         used in the list.
+
         :param criteria: sql where clause
         """
 
         and_expression = '' if criteria == '' else ' AND '
         query = """SELECT station_name FROM envdata.{} where dataset_id = {} {} {} order by station_name;
-                """.format(self.station_view_name, self.__parent.dataset_id, and_expression, criteria
-                    , cn.STATION_NAME_COLUMN)
+                """.format(self.station_view_name, self.parent.dataset_id, and_expression, criteria,
+                    cn.STATION_NAME_COLUMN)
         df = db.execute_query(query)
         lis = df[cn.STATION_NAME_COLUMN].tolist()
-        self.__parent.filter.station_fields_multilist['station'].options = lis
+        self.parent.filter.dic_filters['station'].options = lis
 
     def get_table(self, criteria):
         """
@@ -522,16 +587,13 @@ class Stations:
         """
 
         if criteria == '':
-            query = self.__parent.station_main_display_view.format('1=1')
+            query = self.parent.station_main_display_view.format('1=1')
             df = db.execute_query(query)
         else:
-            result = pd.DataFrame({"Field": [], "Value": []})
-            st_lis = tools.get_cs_item_list(self.__parent.filter.station_multilist, ',', '')
-
-            query = self.__parent.station_main_display_view.format(criteria)
+            query = self.parent.station_main_display_view.format(criteria)
             df = db.execute_query(query)
 
-        if len(self.__parent.filter.station_fields_multilist['station'].value) == 1:
+        if len(self.parent.filter.dic_filters['station'].value) == 1:
             df = tools.transpose_dataframe(df)
 
         return df
@@ -557,18 +619,18 @@ class Stations:
 
         if criteria == '':
             query = """select lat, lon, id as value from {} where dataset_id = {} and not (lat = 0 and lon = 0)
-                    """.format(self.station_view_name, self.__parent.dataset_id)
+                    """.format(self.station_view_name, self.parent.dataset_id)
             title = 'All stations in dataset'
         else:
             query = """select lat, lon, id as value from {} where dataset_id = {} and not (lat = 0 and lon = 0) 
-                    and {}""".format(self.station_view_name, self.__parent.dataset_id, criteria)
+                    and {}""".format(self.station_view_name, self.parent.dataset_id, criteria)
             title = station_name
 
         df = db.execute_query(query)
-        self.__parent.plots.plot_map(title, df, 'ScatterplotLayer', '')
+        self.parent.plots.plot_map(title, df, 'ScatterplotLayer', '')
 
-        if self.__parent.has_google_maps_url():
-            text = r'[View all wells on my google maps]({})'.format(self.__parent.google_maps_url)
+        if self.parent.has_google_maps_url():
+            text = r'[View all wells on my google maps]({})'.format(self.parent.google_maps_url)
             st.markdown(text)
 
     def get_yearly_sample_summary_table(self, criteria) -> pd.DataFrame:
@@ -578,7 +640,7 @@ class Stations:
         :return:
         """
 
-        query = self.__parent.station_years_display_view.format(criteria)
+        query = self.parent.station_years_display_view.format(criteria)
         df = db.execute_query(query)
         return df
 
@@ -589,15 +651,15 @@ class Stations:
         """
 
         # sidebar menu
-        self.__parent.filter.render_menu()
+        self.parent.filter.render_menu()
 
         # content either html table of DataFrame
-        criteria = self.__parent.filter.get_expression
+        criteria = self.parent.filter.get_expression(self.parent.filter.FilterType.station)
         df = self.get_table(criteria)
         station_name = ''
 
         # df.reset_index(inplace = True) #needed so station_name can be selected on plotly table
-        lis = self.__parent.filter.station_fields_multilist['station'].value
+        lis = self.parent.filter.dic_filters['station'].value
         if len(lis) == 1:
             station_name = lis[0]
             st.markdown('#### {}'.format(station_name))
@@ -606,12 +668,12 @@ class Stations:
             st.markdown(tools.get_table_download_link(df), unsafe_allow_html=True)
 
             # show samples belonging to sample
-            df = self.get_samples(self.__parent.station_samples_display_view, criteria)
+            df = self.get_samples(self.parent.station_samples_display_view, criteria)
 
             number_of_samples = len(df)
 
             # title is different for chem samples and time series, with only 1 parameter
-            if self.__parent.data_type == cn.DataType.chemistry.value:
+            if self.parent.data_type == cn.DataType.chemistry.value:
                 # sample summary table
                 text = '#### {0} has {1} samples'.format(station_name, number_of_samples)
                 st.markdown(text)
@@ -631,7 +693,6 @@ class Stations:
             st.dataframe(df)
 
         st.markdown(tools.get_table_download_link(df), unsafe_allow_html=True)
-        clipboard.copy(station_name)  # copy station name to clipboard so it can be pasted into google map if required
         self.draw_map(station_name, criteria)
 
     def get_values(self, criteria):
@@ -644,109 +705,53 @@ class Stations:
 
 class Parameters:
     def __init__(self, parent):
-        self.__parent = parent
+        self.parent = parent
         query = "select id, {0}, {1}, {2} from envdata.parameter where dataset_id = {3} order by {0}".format(
-            cn.PAR_NAME_COLUMN, cn.PAR_LABEL_COLUMN, cn.PAR_UNIT_COLUMN, self.__parent.dataset_id)
+            cn.PAR_NAME_COLUMN, cn.PAR_LABEL_COLUMN, cn.PAR_UNIT_COLUMN, self.parent.dataset_id)
         df = db.execute_query(query)
-        values = df[cn.PAR_NAME_COLUMN].tolist()
-        self.__parameters_options = df['id'].tolist()
-        self.__parameters_display = dict(zip(self.__parameters_options, values))
-        self.__dfParameters = df.set_index('id')
-
-    @property
-    def parent(self):
-        return self.__parent
-
-    @property
-    def dfParameters(self):
-        return self.__dfParameters
+        # values = df[cn.PAR_NAME_COLUMN].tolist()
+        # self.__parameters_options = df[cn.PAR_NAME_COLUMN].tolist()
+        # self.__parameters_display = dict(zip(self.__parameters_options, values))
+        self.dfParameters = df.set_index(cn.PAR_NAME_COLUMN)
 
     @property
     def parameters_options(self):
-        return self.__parameters_options
-
-    @property
-    def parameters_display(self):
-        return self.__parameters_display
+        return self.parent.filter.dic_filters['parameter'].options
 
     def refresh_options(self, criteria):
         """
         Generates the list of parameters. if a criteria is specified, only parameters matching the criteria are
         used in the list.
 
-        Parameters
-        ----------
+        Parameters:
+        -----------
         :param criteria:
-        :return:
+        :return: None
         """
+
         if criteria == '':
             query = """SELECT parameter_name FROM envdata.v_parameters where dataset_id = {0} order by parameter_name;
-                """.format(self.__parent.dataset_id)
+                """.format(self.parent.dataset_id)
         else:
             query = """SELECT parameter_name FROM envdata.v_parameters where dataset_id = {0} and {1} order by 
-                parameter_name;""".format(self.__parent.dataset_id, criteria)
+                parameter_name;""".format(self.parent.dataset_id, criteria)
         df = db.execute_query(query)
         lis = df[cn.PAR_NAME_COLUMN].tolist()
-        self.__parent.filter.station_fields_multilist['parameter'].options = lis
-
-    # def get_table(self):
-    #    """Returns a list of parameters matching the filters set. If no filter is set, all parameters are shown. if a single parameter is selected
-    #    more detail about the selected parameter is shown including a link to more information on NIH Toxnet"""
-    #
-    #        st.write(self.__parent.filter.station_fields_multilist['parameter'].value)
-    ###        if self.__parent.filter.station_fields_multilist['parameter'].value == []:
-    #            query = """select t1.parameter_name, t1.formula, t1.unit, t2.min_value, t2.max_value, t2.average_value, t2.number_of_values
-    #            from envdata.v_parameters where parameter_id in ({})""".format(self.__parent.dataset_id, self.__parent.filter.station_fields_multilist['parameter'].options)
-    #            result = db.execute_query(query)
-    #        else:
-    #            stations = tools.get_cs_item_list(lst = self.__parent.filter.station_multilist, separator = ',', quote_string = '')
-    #            query = """select t1.parameter_name, t1.formula, t1.unit, t2.min_value, t2.max_value, t2.average_value, t2.number_of_values from
-    ##                        envdata.v_parameters t1
-    ##                        inner join (select parameter_id, min(calc_value) min_value, max(calc_value) max_value, avg(calc_value) average_value, count(*) as number_of_values from
-    #                        envdata.v_observations where dataset_id = {} and station_id in ({}) group by parameter_id) t2 on t2.parameter_id = t1.id""".format(self.__parent.dataset_id, stations)
-    #            result = db.execute_query(query)
-    #        return result
-
-    # def get_sample_parameters(self, station_name):
-    #    # filter samples to include only samples listed in the rivers-selection
-    #    result = db.dfValues[(db.dfValues[cn.STATION_NAME_COLUMN].isin(station_name))]
-    #    # make unqique list of parameters from the filtered table
-    #    lst_par = result.PARM.unique()
-    #    # filter the parameter table to include only parameters from the filtered sample list
-    #    result = db.dfParameters[(db.dfParameters[cn.PAR_NAME_COLUMN].isin(lst_par))]
-    #    result = result.PARM_DESCRIPTION
-    #
-    #    return result.tolist()
-
-    # returns the key for a given parameter description. the lists hold parameter descriptions, so they are easier to understand
-    # in the graphs, we need to reference the keys. e.g. Description: CALCIUM and key: CAUT.
-    # def get_parameter_key(self, par_label):
-    #    query = "Select * from v_parameters where dataset_id = {} and {} = '{}'".format(db.DATASET_ID, cn.PAR_LABEL_COLUMN, par_label)
-    #    df = db.execute_query(query)
-    #    return  df.at[0, cn.PAR_NAME_COLUMN]
-
-    def render_all_parameters_table(self):
-        """
-        This function is invoked, if no parameter filter is set. A single table including the metadata of all parameters
-        is shown in the view panel
-        """
-
-        query = """select parameter_name as Name, formula as Formula, unit as Unit, formula_Weight as FMW, valency as Valency, description
-            from envdata.v_parameters where dataset_id = {} order by parameter_name""".format(self.__parent.dataset_id)
-        df = db.execute_query(query)
-        st.markdown('All parameters ({})'.format(df.shape[0]))
-        st.write(df)
+        self.parent.filter.dic_filters['parameter'].options = lis
 
     def get_value(self, parameter, field):
         """
         Returns a metadata value from the parameter table for a specified parameter
-        in: parameter id
-            field name
-        out: metadata value for parameter id
+
+        Parameters:
+        -----------
+        :param parameter: parameter for which a meatadata value should be found
+        :param field:
+        :return: metadata value for specified parameter_name
         """
 
         query = """select {} from v_parameters where dataset_id = {} and 
-                parameter_name = '{}'""".format(field, self.__parent.dataset_id, parameter)
+                parameter_name = '{}'""".format(field, self.parent.dataset_id, parameter)
         df = db.execute_query(query)
         result = df.at[0, field]
         return result
@@ -762,29 +767,70 @@ class Parameters:
         # get list of parameters: if no filter is set: all parameters
         # if parameters_group filter is set but no individual parameters: list froam parameter group
         # if individual parameters are specified: those
-        if len(lis_par) == 0 and len(self.__parent.filter.filters_multilist) > 0:
-            criteria = self.__parent.filter.get_expression
+        if len(lis_par) == 0 and len(self.parent.filter.filters_multilist) > 0:
+            criteria = self.parent.filter.get_expression(self.parent.filter.FilterType.parameter)
             criteria = 'and ' + criteria if criteria > '' else ''
         elif len(lis_par) > 0:
             parameters = tools.get_cs_item_list(lis_par, ',', "'")
             criteria = ' and parameter_name in ({})'.format(parameters)
         df = self.get_parameter_table(criteria)
         st.markdown('Parameters ({})'.format(df.shape[0]))
-        st.write(df)
+        st.dataframe(df)
         st.markdown(tools.get_table_download_link(df), unsafe_allow_html=True)
 
-    def get_parameter_table(self, criteria):
-        """returns a DataFrame holding summary values for samples matching the specified
-        in: 
-        criteria: where clause of sql statement
+        df = self.get_parameter_statistics_table(criteria)
+        st.markdown('Parameter statistics ({})'.format(df.shape[0]))
+        st.dataframe(df)
+        st.markdown(tools.get_table_download_link(df), unsafe_allow_html=True)
 
-        out
-        DataFrame with summary information on parameter and station
+    def get_parameter_table(self, criteria) -> pd.DataFrame:
+        """
+        Returns a DataFrame holding the parameter information
+
+        Parameters:
+        -----------
+        :param criteria:    where clause of sql statement
+        :return:            DataFrame with summary information on parameter and station
         """
 
-        if self.__parent.data_type == cn.DataType.chemistry.value:
-            query = """select t1.parameter_name, t1.formula, cas_number as CRN, t1.unit, t2.min_value, t2.max_value, t2.average_value, 
-                t2.number_of_values, t2.number_of_stations as stations, t2.first_year as 'First year',
+        info = st.empty()
+        msg = """Loading parameters and values summary. This operation may take a while depending on the size of the 
+        size of the dataset"""
+        info.info(msg)
+        if self.parent.data_type == cn.DataType.chemistry.value:
+            query = """select parameter_name, formula, cas_number as CRN, unit, formula_weight, description, 
+            parameter_group 
+            from 
+                envdata.v_parameters
+            where dataset_id = {} {} order by parameter_name""".format(self.parent.dataset_id, criteria)
+        else:
+            query = """select parameter_name, unit, description
+            from 
+                envdata.v_parameters
+            where dataset_id = {} {} order by parameter_name""".format(
+                self.parent.dataset_id, criteria)
+        df = db.execute_query(query)
+        info.text('')
+        return df
+
+    def get_parameter_statistics_table(self, criteria) -> pd.DataFrame:
+        """
+        Returns a DataFrame holding statistics values for samples matching all or the specified parameters. Setting
+        a filter fill limit the parameter and stats shown to that these parameters.
+
+        Parameters:
+        -----------
+        :param criteria:    where clause of sql statement
+        :return:            DataFrame with summary information on parameter and station
+        """
+
+        info = st.empty()
+        msg = """Loading parameters and values summary. This operation may take a while depending on the size of the 
+        size of the dataset"""
+        info.info(msg)
+        if self.parent.data_type == cn.DataType.chemistry.value:
+            query = """select t1.parameter_name, t1.formula, cas_number as CRN, t1.unit, t2.min_value, t2.max_value, 
+                t2.average_value, t2.number_of_values, t2.number_of_stations as stations, t2.first_year as 'First year',
                 t2.last_year as 'Last year', t2.number_of_years as 'Number of years'
             from 
                 envdata.v_parameters t1
@@ -795,7 +841,7 @@ class Parameters:
                 from 
                 envdata.v_observations_complete 
             where dataset_id = {} {} group by parameter_id) t2 on t2.parameter_id = t1.id
-            order by t1.parameter_name""".format(self.__parent.dataset_id, criteria)
+            order by t1.parameter_name""".format(self.parent.dataset_id, criteria)
         else:
             query = """select t1.parameter_name, t1.unit, t2.min_value, t2.max_value, t2.average_value, t2.number_of_values,
                 t2.number_of_stations as stations, t2.first_year as 'First year', t2.last_year as 'Last year', t2.number_of_years as 'Number of years'
@@ -807,8 +853,9 @@ class Parameters:
                 from 
                 envdata.v_time_series 
             where dataset_id = {} {} group by parameter_id) t2 on t2.parameter_id = t1.id""".format(
-                self.__parent.dataset_id, criteria)
+                self.parent.dataset_id, criteria)
         df = db.execute_query(query)
+        info.text('')
         return df
 
     def get_parameter_summary_table(self, criteria):
@@ -820,17 +867,18 @@ class Parameters:
         DataFrame with summary information on parameter and station
         """
 
-        if self.__parent.data_type == cn.DataType.chemistry.value:
+        if self.parent.data_type == cn.DataType.chemistry.value:
             query = """select t2.station as Station, t2.min_value, t2.max_value, t2.average_value, t2.number_of_values,
                 t2.first_year as 'First year', t2.last_year as 'Last year', t2.number_of_years as 'Number of years'
             from 
                 envdata.v_parameters t1
-                inner join (select parameter_id, station_name as station, min(calc_value) min_value, max(calc_value) max_value, avg(calc_value) average_value, 
+                inner join (select parameter_id, station_name as station, min(calc_value) min_value, max(calc_value) 
+                max_value, avg(calc_value) average_value, 
                 count(*) as number_of_values, min(year(sample_date)) as first_year, 
                 max(year(sample_date)) as last_year, count(distinct year(sample_date)) as number_of_years
                 from 
                 envdata.v_observations
-                where dataset_id = {} {} group by parameter_name, station) t2 on t2.parameter_id = t1.id""".format(self.__parent.dataset_id, criteria)
+                where dataset_id = {} {} group by parameter_name, station) t2 on t2.parameter_id = t1.id""".format(self.parent.dataset_id, criteria)
         else:
             query = """select t2.station as Station, t2.min_value, t2.max_value, t2.average_value, t2.number_of_values,
                 t2.first_year as 'First year', t2.last_year as 'Last year', t2.number_of_years as 'Number of years'
@@ -842,7 +890,7 @@ class Parameters:
                     from 
                     envdata.v_time_series
             where dataset_id = {} {} group by parameter_name, station) t2 on t2.parameter_id = t1.id""".format(
-                self.__parent.dataset_id, criteria)
+                self.parent.dataset_id, criteria)
         df = db.execute_query(query)
         return df
 
@@ -853,16 +901,16 @@ class Parameters:
         :return:
         """
 
-        if self.__parent.data_type == cn.DataType.chemistry.value:
+        if self.parent.data_type == cn.DataType.chemistry.value:
             query = """select lat, lon, station_name, t2.value from v_stations t1 inner join (select station_id, 
             avg(calc_value) as value from v_observations where calc_value is not null and 
             parameter_name = '{}' and dataset_id = {} group by station_id) t2 on t2.station_id = t1.id 
-            where coalesce(t1.lat, 0) <> 0""".format(parameter, self.__parent.dataset_id)
+            where coalesce(t1.lat, 0) <> 0""".format(parameter, self.parent.dataset_id)
         else:
-            query = """select lat, lon, station_name, t2.value as calc_value from v_time_series_stations t1 
-            inner join (select station_id, avg(calc_value) as value from v_time_series where dataset_id = {} group by 
-            station_id) t2 on t2.station_id = t1.id where coalesce(t1.lat, 0)  <> 0
-            """.format(self.__parent.dataset_id)
+            query = """select t1.lat, t1.lon, t1.station_name, t2.calc_value from v_time_series_stations t1 
+            inner join (select station_id, avg(calc_value) as calc_value from v_time_series where dataset_id = {} 
+            group by station_id) t2 on t2.station_id = t1.id where coalesce(t1.lat, 0)  <> 0
+            """.format(self.parent.dataset_id)
         df = db.execute_query(query)
         return df
 
@@ -898,7 +946,7 @@ class Parameters:
             df = self.get_map_table(parameter)
             title = 'Map average ({})'.format(parameter)
             # make sure the station as coordinates
-            self.parent.plots.plot_map(title=title, df=df, layer_type='ScatterplotLayer', value_col='value')
+            self.parent.plots.plot_map(title=title, df=df, layer_type='ScatterplotLayer', value_col='calc_value')
         else:
             st.info('Please select at least one parameter')
 
@@ -906,34 +954,28 @@ class Parameters:
         """The function renders the sidebar menu for the parameters option menu item"""
 
         # sidebar menu
-        self.__parent.filter.render_menu()
+        self.parent.filter.render_menu()
 
         # df.reset_index(inplace = True) #needed so station_name can be selected on plotly table
         lis = []
-        # st.write(self.__parent.filter.station_fields_multilist.keys)
-        if 'parameter' in self.__parent.filter.station_fields_multilist:
-            lis = self.__parent.filter.station_fields_multilist['parameter'].value
+        if 'parameter' in self.parent.filter.dic_filters:
+            lis = self.parent.filter.dic_filters['parameter'].value
         if len(lis) == 0:
             self.render_multi_parameters_table(lis)
         elif len(lis) == 1:
-            df = self.render_single_parameters_table(lis)
+            self.render_single_parameters_table(lis)
         else:
-            df = self.render_multi_parameters_table(lis)
-
-        # df = df.set_index(cn.PAR_NAME_COLUMN)
-        # df = df[[cn.PAR_NAME_COLUMN, cn.PAR_LABEL_COLUMN, cn.PAR_UNIT_COLUMN]]
-        # values = [df[cn.PAR_NAME_COLUMN], df[cn.PAR_LABEL_COLUMN], df[cn.PAR_UNIT_COLUMN]]
-        # txt.show_table(df, values)
-        # st.write("{} parameters found in stations {}".format(len(df.index), ','.join(ctrl['station_list_multi']) ))
+            self.render_multi_parameters_table(lis)
 
 
 class Plots:
     """This class is used to generate plots and render plot related UI controls"""
+
     marker_group_by: str
 
     def __init__(self, parent):
         tools.log('Plots.__init__, start')
-        self.__parent = parent
+        self.parent = parent
         self.__plot_type = 'bar chart'
         self.plot_groupby = ''
         self.marker_groupby = ''
@@ -941,14 +983,18 @@ class Plots:
         self.show_data_table = False
         self.plot_width = cn.plot_width
         self.plot_height = cn.plot_height
-        self.xpar = 0
-        self.ypar = 0
+        self.xpar = ''
+        self.ypar = ''
+        self.xp = ''        # placeholder for xpar
+        self.yp = ''        # placeholder for ypar
         self.define_axis_limits = False
         self.xax_min = 0
         self.xax_max = 0
         self.yax_min = 0
         self.yax_max = 0
         self.bin_size = 0
+        self.marker_average_method = ''
+        self.stat_line_method = ''
         tools.log('Plots.__init__, end')
 
     @property
@@ -958,7 +1004,7 @@ class Plots:
     @plot_type.setter
     def plot_type(self, pt):
         """
-        sets the plot type. For time series plots, the def sets the
+        Sets the plot type. For time series plots, the def sets the
         filter checkbox to true, so not all values from all stations are retrieved  
         """
 
@@ -968,38 +1014,68 @@ class Plots:
 
         if self.plot_type == 'time series':
             self.marker_group_by = 'station'
-            self.__parent.filter.station_filters = ['station_name']
+            self.parent.filter.station_filters = ['station_name']
         tools.log(pt)
         tools.log('self.plot_type = pt, end')
 
     def render_menu(self):
-        def handle_plot_group(_criteria_base):
-            par = cn.group_by_display[self.plot_groupby]
-            _lis = db.get_distinct_values(par, self.__parent.observations_view,
-                                         self.__parent.dataset_id, _criteria_base)
-            for _group in _lis:
-                _criteria = "{} AND {} = '{}'".format(_criteria_base, par, _group)
-                _tit = _group
-                self.plot(title=_tit, criteria=_criteria)
+        """
+        This function renders the plotting menu control on the sideboard and the specified plots on the work screen
+        """
 
-        """Renders the plotting menu control on the sideboard and the specified plots on the work screen"""
-        tools.log('plots.render_menu')
+        def handle_plot_group(_criteria_base):
+            """
+            This function is invoked if the user chooses to group plots by a station parameter. First, the list of
+            values is reduced tot the parameters present in the data selection. Then all plots are generated in a loop
+            """
+
+            par = cn.group_by_display[self.plot_groupby]
+            _lis = db.get_distinct_values(par, self.parent.observations_view,
+                                         self.parent.dataset_id, _criteria_base)
+            for _group in _lis:
+                _criteria = "{} AND {} = '{}'".format(_criteria_base, par, _group.replace("'", "''"))
+                _tit = _group
+                self.plot(title=_tit, criteria=_criteria, parameters=[self.xpar, self.ypar])
+
+        def handle_group_by_parameter(_criteria_base: str):
+            """
+            This function is invoked if the user chooses to group plots by parameters. First, the list of values
+            is reduced tot the parameters present in the data selection. Then all plots are generated in a loop
+            """
+
+            _lis = self.parent.filter.dic_filters['parameter'].value
+            if not _lis:
+                _lis = self.parent.filter.dic_filters['parameter'].options
+
+            for _group in _lis:
+                _tit = _group
+                _parameters = [self.xpar, _group]
+                if self.plot_type == 'scatter plot':
+                    _criteria = "{} AND parameter_name in ({})".format(_criteria_base,
+                                                                       tools.get_cs_item_list(_parameters, ',', "'"))
+                else:
+                    _criteria = "{} AND parameter_name = '{}'".format(_criteria_base, _group)
+                self.plot(title=_tit, criteria=_criteria, parameters=_parameters)
+
         self.render_controls()
-        criteria_base = self.__parent.filter.get_expression
-        criteria_base = self.__parent.filter.append_parameter_filter(criteria_base)
+        criteria_base = self.parent.filter.get_expression(self.parent.filter.FilterType.values)
+        if not self.is_grouped_by_parameter:
+            criteria_base = self.parent.filter.append_parameter_filter(criteria_base)
         if self.plot_groupby == 'none':
             criteria = criteria_base
             tit = ''
-            self.plot(title=tit, criteria=criteria)
+            self.plot(title=tit, criteria=criteria, parameters=[self.xpar, self.ypar])
+        elif self.is_grouped_by_parameter:
+            handle_group_by_parameter(criteria_base)
         elif self.plot_groupby == cn.STATION_NAME_COLUMN:
             # if a station filter is set, then loop through these stations otherwise loop through all stations
-            if len(self.__parent.filter.station_fields_multilist['station'].value) > 0:
-                list_of_stations = self.__parent.filter.station_fields_multilist['station'].value
+            if len(self.parent.filter.dic_filters['station'].value) > 0:
+                list_of_stations = self.parent.filter.dic_filters['station'].value
             else:
-                list_of_stations = self.__parent.filter.station_fields_multilist['station'].options
+                list_of_stations = self.parent.filter.dic_filters['station'].options
 
             for group in list_of_stations:
-                criteria = criteria_base + " AND {0} = '{1}'".format(cn.STATION_NAME_COLUMN, group)
+                criteria = criteria_base + " AND {0} = '{1}'".format(cn.STATION_NAME_COLUMN, group.replace("'", "''"))
                 tit = group
                 self.plot(title=tit, criteria=criteria)
 
@@ -1007,7 +1083,7 @@ class Plots:
                 # if (len(plot_results[1]) > 0):
                 #    st.write(plot_results[0].properties(width = self.plot_width, height = self.plot_height))
                 #    # if a station has been selected display a link to visit site on google maps
-                #    if not filter_stations_cb and len(self.__parent.filter.station_multilist) == 1:
+                #    if not filter_stations_cb and len(self.parent.filter.station_multilist) == 1:
                 #        stations.dfStations.set_index(cn.STATION_NAME_COLUMN, inplace = True)
                 #        lat = stations.dfStations.at[self.ctrl['station'],'lat']
                 #        lon = stations.dfStations.at[self.ctrl['station'],'lon']
@@ -1019,51 +1095,59 @@ class Plots:
         else:
             handle_plot_group(criteria_base)
 
-    def get_label(self, par_id):
+    @property
+    def is_grouped_by_parameter(self) -> bool:
+        """
+        Return true if the plots are currently grouped by the parameter. In this case a parameter filter should also be
+        used to prevent too many plots to be shown.
 
-        label = self.__parent.parameters.dfParameters.at[par_id, cn.PAR_LABEL_COLUMN]
-        unit = self.__parent.parameters.dfParameters.at[par_id, cn.PAR_UNIT_COLUMN]
+        :return: true or false
+        """
+
+        return self.plot_groupby == cn.PAR_NAME_COLUMN
+
+    def get_label(self, par_name):
+        label = self.parent.parameters.dfParameters.at[par_name, cn.PAR_LABEL_COLUMN]
+        unit = self.parent.parameters.dfParameters.at[par_name, cn.PAR_UNIT_COLUMN]
         return "{} ({})".format(label, unit)
 
-    def plot(self, title, criteria):
+    def plot(self, title, criteria, parameters):
         """
         Generates the selected plot type.
+
         Parameters:
         -----------
-        :param title: title of plot
+        :param parameters: list of parameters to be used in plot. 2 parmaeters are specified for scatter plots, 1 for
+        all others. The parmaeters are eitehr specified in the parmaetrs and axis settings or alterativel plots may be
+        grouped by parameters, in which case the y parameter changes for each plot.
+        :param title: title for plot
         :param criteria: filter limiting the data used to create the plot
-        :return: list holding plot object and ...????
+        :return: list holding plot object and a dataframe holding all data
         """
-        tools.log('plot, start')
-        tools.log('df, start')
-        df = self.__parent.get_values(criteria=criteria)
-        tools.log('df, end')
-        tools.log(df.shape[0])
-        tools.log(df.shape[0] > 100000)
-        data_ok = True
 
+        df = self.parent.get_values(criteria=criteria)
+        data_ok = True
         if df.shape[0] > 500000:
             st.info('Data includes too many rows ({}). Please filter before plotting'.format(df.shape[0]))
             data_ok = False
         elif df.shape[0] > 50000:
             st.spinner(text='Data includes {} rows, this may take a while'.format(df.shape[0]))
-            tools.log('{} rows'.df.shape[0])
 
         if data_ok:
             if self.plot_type == 'scatter plot':
-                plot_results = self.plot_scatter(title, df)
+                plot_results = self.plot_scatter(title, df,  parameters)
             elif self.plot_type == 'time series':
-                plot_results = self.plot_time_series(title, df)
+                plot_results = self.plot_time_series(title, df,  parameters[1])
             elif self.plot_type == 'histogram':
-                plot_results = self.plot_histogram(title, df)
+                plot_results = self.plot_histogram(title, df,  parameters[1])
             elif self.plot_type == 'box plot':
-                plot_results = self.plot_boxplot(title, df)
+                plot_results = self.plot_boxplot(title, df,  parameters[1])
             elif self.plot_type == 'schoeller':
-                plot_results = self.plot_schoeller(title, df)
+                plot_results = self.plot_schoeller(title, df,  parameters[1])
             elif self.plot_type == 'bar chart' and self.__direction == 'horizontal':
-                plot_results = self.plot_bar_h(title, df)
+                plot_results = self.plot_bar_h(title, df, parameters[1])
             elif self.plot_type == 'bar chart' and self.__direction == 'vertical':
-                plot_results = self.plot_bar_v(title, df)
+                plot_results = self.plot_bar_v(title, df, parameters[1])
             elif self.plot_type == 'map':
                 self.plot_map(title, df, layer_type='ScatterplotLayer', value_col='calc_value')
                 plot_results = []
@@ -1075,14 +1159,16 @@ class Plots:
                 pass
             elif len(plot_results[1]) > 0:
                 st.write(plot_results[0].properties(width=self.plot_width, height=self.plot_height))
-                if self.__show_data_table:
-                    st.dataframe(plot_results[1])
-                    st.markdown(tools.get_table_download_link(plot_results[1]), unsafe_allow_html=True)
+                if self.parent.menu == 'Plotting':
+                    if self.__show_data_table:
+                        st.dataframe(plot_results[1])
+                        st.markdown(tools.get_table_download_link(plot_results[1]), unsafe_allow_html=True)
             else:
                 st.info("Plot '{}' could not be generated: insufficient data".format(title))
 
-    def plot_schoeller(self, title: str, df: pd.DataFrame):
+    def plot_schoeller(self, title: str, df: pd.DataFrame, parameters):
         """ todo: schoeller plot"""
+
         st.write("#### {}".format(title))
         st.write(df)
         base = alt.Chart(df).transform_window(
@@ -1098,9 +1184,20 @@ class Plots:
         )
         return base
 
-    def plot_boxplot(self, title: str, df: pd.DataFrame) -> list:
+    def plot_boxplot(self, title: str, df: pd.DataFrame, par: str) -> list:
+        """
+        Returns a box plot object and the data table on which the plot is based.
+
+        Parameters:
+        -----------
+        :param title: plot title
+        :param df: data table
+        :param par: parameter name
+        :return: list with plot object and dataframe
+        """
+
         result = []
-        y_lab = self.get_label(self.ypar)
+        y_lab = self.get_label(par)
         x_lab = ''
         if self.__yax_max == self.__yax_min:
             scy = alt.Scale()
@@ -1114,9 +1211,9 @@ class Plots:
         result.append(df)
         return result
 
-    def plot_histogram(self, title: str, df: pd.DataFrame) -> list:
+    def plot_histogram(self, title: str, df: pd.DataFrame, par) -> list:
         result = []
-        x_lab = self.get_label(self.ypar)
+        x_lab = self.get_label(par)
         # df = df[(df[cn.PAR_NAME_COLUMN] == self.ypar) & (df[cn.VALUES_VALUE_COLUMN] > 0)]
 
         if self.marker_group_by == 'none':
@@ -1155,49 +1252,51 @@ class Plots:
         result.append(df)
         return result
 
-    def plot_bar_h(self, title: str, df: pd.DataFrame) -> list:
+    def plot_bar_h(self, title: str, df: pd.DataFrame, par: str) -> list:
         result = []
-        y_lab = self.get_label(self.ypar)
+        y_lab = self.get_label(par)
         # df = df[(df[cn.PAR_NAME_COLUMN] == self.ypar) & (df[cn.VALUES_VALUE_COLUMN] > 0)]
         # brush = alt.selection(type='interval', encodings=['x'])
         if self.__yax_max == self.__yax_min:
             scy = alt.Scale()
         else:
             scy = alt.Scale(domain=[self.__yax_min, self.__yax_max])
-
         base = alt.Chart(data=df, title=title).mark_bar().encode(
             alt.Y('{}:O'.format(self.marker_group_by), title=''),
-            alt.X('mean({0}):Q'.format(cn.VALUES_VALUE_COLUMN), title=y_lab, scale=scy),
+            alt.X('{}({}):Q'.format(self.marker_average_method, cn.VALUES_VALUE_COLUMN), title=y_lab, scale=scy),
         )
 
-        avg = alt.Chart(df).mark_rule(color='red').encode(
-            x='mean({0}):Q'.format(cn.VALUES_VALUE_COLUMN)
-        )
-
-        result.append(base + avg)
+        if self.stat_line_method != 'none':
+            avg = alt.Chart(df).mark_rule(color='red').encode(
+                x='{}({}):Q'.format(self.stat_line_method, cn.VALUES_VALUE_COLUMN)
+            )
+            result.append(base + avg)
+        else:
+            result.append(base)
         result.append(df)
         return result
 
-    def plot_bar_v(self, title: str, df: pd.DataFrame) -> list:
+    def plot_bar_v(self, title: str, df: pd.DataFrame, par: str) -> list:
         result = []
-        y_lab = self.get_label(self.ypar)
-        # df = df[(df[cn.PAR_NAME_COLUMN] == self.ypar) & (df[cn.VALUES_VALUE_COLUMN] > 0)]
+        y_lab = self.get_label(par)
+        # df = df[(df[cn.PAR_NAME_COLUMN] == par) & (df[cn.VALUES_VALUE_COLUMN] > 0)]
         # brush = alt.selection(type='interval', encodings=['x'])
+
         if self.__yax_max == self.__yax_min:
             scy = alt.Scale()
         else:
             scy = alt.Scale(domain=[self.__yax_min, self.__yax_max])
-
         base = alt.Chart(data=df, title=title).mark_bar().encode(
             alt.X('{}:O'.format(self.marker_group_by), title=''),
-            alt.Y('mean({0}):Q'.format(cn.VALUES_VALUE_COLUMN), title=y_lab, scale=scy),
+            alt.Y('{}({}):Q'.format(self.marker_average_method, cn.VALUES_VALUE_COLUMN), title=y_lab, scale=scy),
         )
-
-        avg = alt.Chart(df).mark_rule(color='red').encode(
-            y='mean({0}):Q'.format(cn.VALUES_VALUE_COLUMN)
-        )
-
-        result.append(base + avg)
+        if self.stat_line_method != 'none':
+            avg = alt.Chart(df).mark_rule(color='red').encode(
+                y='{}({}):Q'.format(self.stat_line_method, cn.VALUES_VALUE_COLUMN)
+            )
+            result.append(base + avg)
+        else:
+            result.append(base)
         result.append(df)
         return result
 
@@ -1265,6 +1364,13 @@ class Plots:
             st.pydeck_chart(r)
             if value_col:
                 self.render_legend(min_val, max_val, cn.MAP_LEGEND_SYMBOL_SIZE)
+            if self.parent.menu == 'Plotting':
+                if self.__show_data_table:
+                    df = tools.remove_nan_columns(df)
+                    df = tools.remove_columns(df, ['color_r', 'color_g', 'color_b'])
+                    # df = df.rename(columns={'calc_value': title})
+                    st.dataframe(df)
+                    st.markdown(tools.get_table_download_link(df), unsafe_allow_html=True)
         else:
             st.warning('Unable to create map: no location data was found')
 
@@ -1280,7 +1386,7 @@ class Plots:
         """
 
         a = round(min_val)
-        b = round((max_val - min_val) / 2)
+        b = round(min_val + (max_val - min_val) / 2)
         c = round(max_val)
         legend = """
            <style>
@@ -1315,20 +1421,30 @@ class Plots:
            """.format(height, a, b, c)
         st.markdown(legend, unsafe_allow_html=True)
 
-    def plot_time_series(self, title: str, df: pd.DataFrame) -> list:
-        """Plots a time series plot. input: title: plot title, df: datafram with the data, ctrl: list of GUI controls"""
+    def plot_time_series(self, title: str, df: pd.DataFrame, par) -> list:
+        """
+        Plots a time series plot. for time series plots the marker group by parameter is automatically set to the
+        station.
+
+        Parameters:
+        -----------
+        :param title:
+        :param df:
+        :param par:
+        :return:
+        """
 
         result = []
         x_lab = ''
-        y_lab = self.get_label(self.ypar)
+        y_lab = self.get_label(par)
         if self.__yax_max == self.__yax_min:
             scy = alt.Scale()
         else:
             scy = alt.Scale(domain=(self.__yax_min, self.__yax_max))
 
-        base = alt.Chart(df, title=title).mark_line(point=self.__parent.has_markers, clip=True).encode(
+        base = alt.Chart(df, title=title).mark_line(point=self.parent.has_markers, clip=True).encode(
             x=alt.X('{}:T'.format(cn.SAMPLE_DATE_COLUMN),
-                    axis=alt.Axis(title='')),
+                    axis=alt.Axis(title=x_lab)),
             y=alt.Y('{}:Q'.format(cn.VALUES_VALUE_COLUMN),
                     scale=scy,
                     axis=alt.Axis(title=y_lab)
@@ -1342,7 +1458,7 @@ class Plots:
         result.append(df)
         return result
 
-    def plot_scatter(self, title: str, df: pd.DataFrame) -> list:
+    def plot_scatter(self, title: str, df: pd.DataFrame, parameters: list) -> list:
         """
         Returns a scatter plot diagram
 
@@ -1353,11 +1469,18 @@ class Plots:
 
         result = []
         # remove NAN values
-        df = tools.get_pivot_data(df, self.marker_group_by)
+        if self.marker_group_by != 'none':
+            df = tools.get_pivot_data(df, self.marker_group_by)
+            group_by_par = self.marker_group_by
+        else:
+            df['Legend'] = 'All'
+            df = tools.get_pivot_data(df, 'Legend')
+            group_by_par = 'Legend'
+
         df = df.reset_index()
         # verify that both parameter exist as column names
-        x_col = self.__parent.parameters.parameters_display[self.xpar]
-        y_col = self.__parent.parameters.parameters_display[self.ypar]
+        x_col = parameters[0]
+        y_col = parameters[1]
         ok = set([x_col, y_col]).issubset(df.columns)
         # filter for NAN values
         if ok:
@@ -1365,8 +1488,8 @@ class Plots:
             ok = len(df) > 0
         if ok:
             df = df.reset_index()
-            x_lab = self.get_label(self.xpar)
-            y_lab = self.get_label(self.ypar)
+            x_lab = self.get_label(x_col)
+            y_lab = self.get_label(y_col)
 
             if self.xax_max == self.xax_min:
                 scx = alt.Scale()
@@ -1377,18 +1500,15 @@ class Plots:
                 scy = alt.Scale()
             else:
                 scy = alt.Scale(domain=(self.__yax_min, self.__yax_max))
-
             base = alt.Chart(df, title=title).mark_circle(size=cn.symbol_size, clip=True).encode(
-                x=alt.X(x_col + ':Q',
+                x=alt.X('{}:Q'.format(x_col),
                         scale=scx,
                         axis=alt.Axis(title=x_lab)),
                 y=alt.Y(y_col + ':Q',
                         scale=scy,
                         axis=alt.Axis(title=y_lab)),
-                color=alt.Color('{}:O'.format(self.marker_group_by),
-                                scale=alt.Scale(scheme=cn.color_schema)
-                                ),
-                tooltip=[cn.STATION_NAME_COLUMN,cn.SAMPLE_DATE_COLUMN, self.marker_group_by, x_col, y_col]
+                color=alt.Color('{}:O'.format(group_by_par), scale=alt.Scale(scheme=cn.color_schema)),
+                tooltip=[cn.STATION_NAME_COLUMN, cn.SAMPLE_DATE_COLUMN, group_by_par, x_col, y_col]
             )
         else:
             empty_df = pd.DataFrame(data={'col1': [1, 2], 'col2': [3, 4]})
@@ -1406,18 +1526,17 @@ class Plots:
 
         # def render_time_filter():
         #    """ renders the controls for the time filter to ensure that the user may only filter by 1 time control"""
-        #    if not self.__parent.filter.filter_by_season_cb:
-        #        self.__parent.filter.filter_by_year_cb = st.sidebar.checkbox('Filter data by year', value=False,
+        #    if not self.parent.filter.filter_by_season_cb:
+        #        self.parent.filter.filter_by_year_cb = st.sidebar.checkbox('Filter data by year', value=False,
         #                                                                     key=None)
-        #    if self.__parent.filter.filter_by_year_cb:
-        #        self.__parent.filter.year_slider = st.sidebar.slider('Year', min_value=int(self.__parent.first_year),
-        #                                                             max_value=int(self.__parent.last_year),
-        #                                                             value=self.__parent.filter.year_slider)
+        #    if self.parent.filter.filter_by_year_cb:
+        #        self.parent.filter.year_slider = st.sidebar.slider('Year', min_value=int(self.parent.first_year),
+        #                                                             max_value=int(self.parent.last_year),
+        #                                                             value=self.parent.filter.year_slider)
 
         def render_group_by_controls():
             """Group by controls for plots and markers"""
 
-            tools.log('render_group_by_controls, start')
             st.sidebar.markdown('---')
             st.sidebar.markdown('#### Plot group and marker settings')
             self.plot_groupby = st.sidebar.selectbox('Group plots by', cn.group_by_options,
@@ -1432,18 +1551,23 @@ class Plots:
                                                               format_func=lambda x: cn.group_by_display[x], index=2)
             tools.log('render_group_by_controls, end')
 
+        def render_xy():
+            if self.plot_type not in ['time series', 'histogram', 'box plot', 'bar chart', 'map']:
+                self.xpar = self.xp.selectbox('X-parameter', options=self.parent.parameters.parameters_options)
+            # show y par only if group by is not parameter, otherwise y par changes for each plot
+            if self.plot_groupby != cn.PAR_NAME_COLUMN:
+                self.ypar = self.yp.selectbox('Y-parameter', options=self.parent.parameters.parameters_options)
+
         def render_options():
             """Renders plot specific options controls such as pameters or number of bins for histograms."""
 
             st.sidebar.markdown('---')
             st.sidebar.markdown('#### Plot and axis settings')
             if self.plot_type not in ['time series', 'histogram', 'box plot', 'bar chart', 'map']:
-                self.xpar = st.sidebar.selectbox('X-parameter', options=self.__parent.parameters.parameters_options,
-                                                   format_func=lambda x: self.__parent.parameters.parameters_display[x])
-            self.ypar = st.sidebar.selectbox('Y-parameter',
-                                               options=self.__parent.parameters.parameters_options,
-                                               format_func=lambda x: self.__parent.parameters.parameters_display[x])
-
+                self.xp = st.sidebar.empty()
+            # show y par only if group by is not parameter, otherwise y par changes for each plot
+            if self.plot_groupby != cn.PAR_NAME_COLUMN:
+                self.yp = st.sidebar.empty()
             if self.plot_type == 'histogram':
                 self.bin_size = st.sidebar.number_input('Bin width')
 
@@ -1451,8 +1575,10 @@ class Plots:
 
             if self.plot_type == 'bar chart':
                 self.__direction = st.sidebar.radio('Bars', ['vertical', 'horizontal'])
+                self.marker_average_method = st.sidebar.selectbox('Bar aggregation method', options=cn.stat_line_options_no_none)
+                self.stat_line_method = st.sidebar.selectbox('Summary line', options=cn.stat_line_options)
 
-            if self.plot_type == 'scatter plot':
+            if self.plot_type in ('scatter plot', 'histogram'):
                 self.xax_min = st.sidebar.number_input('Minimum X', value=0.0)
                 self.xax_max = st.sidebar.number_input('Maximum X', value=0.0)
 
@@ -1471,4 +1597,6 @@ class Plots:
         self.plot_type = st.sidebar.selectbox('Plot type', cn.plot_type_list, index=0)
         render_group_by_controls()
         render_options()
-        self.__parent.filter.render_menu()
+        self.parent.filter.render_menu()
+        # by know the filters are known and the xy parameters can be filled with the appropriate lists.
+        render_xy()
