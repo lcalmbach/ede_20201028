@@ -2,6 +2,8 @@
     Collection of useful functions.
 """
 
+__author__ = "lcalmbach@gmail.com"
+
 import config as cn
 import streamlit as st
 import pandas as pd

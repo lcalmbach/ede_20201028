@@ -1,8 +1,9 @@
 """
-This module contains the classes fontus, stations, parameters and plotting
+This module contains the classes fontus, stations, parameters filter, and plotting. fontus is the main ede object and
+includes a stations and a parameters collection as well as a plots utility and filter class.
 """
 
-__author__ = "Lukas Calmbach"
+__author__ = "lcalmbach@gmail.com"
 
 import pandas as pd
 
@@ -34,7 +35,6 @@ class Fontus:
         Create a new fontus session consisting of a data collection and sets id as the current data collection.
         """
 
-        tools.log('Fontus.__init__, start')
         db.init()
         locale.setlocale(locale.LC_ALL, '')  # Use '' for auto, or force e.g. to 'en_US.UTF-8'
         self.__menu = 'Info'
@@ -65,13 +65,16 @@ class Fontus:
 
     @property
     def menu(self):
-        """menu selection: info, plotting, parameters info, stations info"""
+        """Menu selection: info, plotting, parameters info, stations info."""
 
         return self.__menu
 
     @menu.setter
     def menu(self, menuitem):
-        """menu selection: info, plotting, parameters info, stations info"""
+        """
+        When setting the menu, some default may be set, for example if the menu is set to plotting, a default filter
+        is set, so very large dataset dont take up too much time so show the first plot.
+        """
 
         self.__menu = menuitem
         if self.__menu == 'Plotting' and self.__data_type != cn.DataType.chemistry.value:
@@ -98,7 +101,12 @@ class Fontus:
 
     @data_collection_id.setter
     def data_collection_id(self, id):
-        """Initializes the data collection id. sets parameter data_collection_id and reads related data from db"""
+        """
+        Initializes the data collection id and reads related data from the database.
+
+        :param id:  id of datacollection
+        :return:
+        """
 
         if id != self.__data_collection_id:
             self.__data_collection_id = id
@@ -117,30 +125,32 @@ class Fontus:
             self.__menu = 'Info'
 
     @property
-    def observations_view(self):
-        """return view name for observations of the selected dataset"""
+    def observations_view(self) -> str:
+        """Return view name for observations of the selected dataset"""
         return self.__observations_view
 
     @property
-    def parameter_view(self):
+    def parameter_view(self) -> str:
         """return view name for the parameters tble of the selected dataset"""
         return self.__parameter_view
 
     @property
-    def google_maps_url(self):
+    def google_maps_url(self) -> str:
         return self.__google_maps_url
 
-    def has_google_maps_url(self):
+    def has_google_maps_url(self) -> str:
         return self.__google_maps_url not in (None, '')
 
     @property
-    def dataset_id(self):
+    def dataset_id(self) -> int:
         """returns the dataset_id"""
+
         return self.__dataset_id
 
     @dataset_id.setter
     def dataset_id(self, id):
-        """sets the dataset_id and retrieves a dataframe of all datasets belonging to the current data collection"""
+        """Sets the dataset_id and retrieves a dataframe of all datasets belonging to the current data collection"""
+
         if id > 0:
             self.__dataset_id = id
             query = 'SELECT * FROM envdata.v_datasets where id = {}'.format(id)
@@ -163,19 +173,19 @@ class Fontus:
             self.__stations = Stations(self)
 
     @property
-    def station_main_display_view(self):
-        """sql string querying columns for station display view, menu item stations info"""
+    def station_main_display_view(self) -> str:
+        """SQL string querying columns for station display view, menu item stations info"""
 
         return self.__station_main_display_view
 
     @property
-    def station_samples_display_view(self):
+    def station_samples_display_view(self) -> str:
         """sql string querying columns for station display view, menu item stations info"""
 
         return self.__station_samples_display_view
 
     @property
-    def station_years_display_view(self):
+    def station_years_display_view(self) -> str:
         """sql string querying columns for station display view, menu item stations info"""
 
         return self.__station_years_display_view
@@ -183,6 +193,7 @@ class Fontus:
     @property
     def first_year(self):
         """Year of first sample collection"""
+
         return self.__first_year
 
     @property
@@ -253,13 +264,15 @@ class Fontus:
         for ref in refs:
             st.markdown('    * {}'.format(ref), unsafe_allow_html=True)
 
-    def get_values(self, criteria):
+    def get_values(self, criteria: str) -> pd.DataFrame:
         """Returns a data frame with all values matching the criteria"""
 
         def get_map_parameters_df():
             """
             Generates the query to sql query for a map showing average parameter for each station
             :return: sql query expression
+
+            :return:
             """
 
             q = """SELECT station_name, aquifer_type, depth_category, authority, water_body_name, 
@@ -283,8 +296,9 @@ class Fontus:
         return result
 
     def render_about_text(self):
-        """ Renders info on the selected data collection composed of: a header image, some explenatory text,
-        a metadata table for the data collection and metadata for each dataset included in the data collection.
+        """
+        Renders info on the selected data collection composed of: a header image, some explenatory text,a metadata
+        table for the data collection and metadata for each dataset included in the data collection.
         """
 
         myid = self.__data_collection_id
@@ -347,7 +361,6 @@ class Filter:
         parameter = 2
         values = 3
 
-
     def __init__(self, parent, df_fields: pd.DataFrame):
         """
         Initializes the filter.
@@ -376,7 +389,6 @@ class Filter:
             for row in _df_filters.itertuples(index=True):
                 self.dic_filters[row[0]] = self.FilterItem(self.parent, row)
                 self.filter_fields_options.append(row[0])
-
 
     class FilterItem:
         """
@@ -466,7 +478,9 @@ class Filter:
 
     def has_parameter_group_filter(self):
         """
-        checks the parameter_group exists in the filter field options and if it is filled
+        Checks whether the parameter_group exists in the filter field options and whether it is filled. For datasets
+        having only 1 or a few samples, parameter groups are often not useful and therefore the parameter_group item
+        is not included in the filter options.
 
         :return: true if parameter_group and is filled
         """

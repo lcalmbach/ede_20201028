@@ -2,18 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3ed21686-7c48-4feb-bf0d-5d637fce23ab" name="Default Changelist" comment="Merge branch 'master' of https://github.com/lcalmbach/ede&#10;&#10;# Conflicts:&#10;#&#9;ede_doc/conf.py">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/database.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fontus.py" beforeDir="false" afterPath="$PROJECT_DIR$/fontus.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pydeck5y947dlv.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pydeckxe2gk74l.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test2.py" beforeDir="false" afterPath="$PROJECT_DIR$/test2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tools.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ede_doc/conf.py" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -23,11 +13,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/fontus.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="156">
-              <caret line="1092" column="36" selection-start-line="1092" selection-start-column="36" selection-end-line="1092" selection-end-column="36" />
+            <state relative-caret-position="269">
+              <caret line="494" column="44" lean-forward="true" selection-start-line="494" selection-start-column="44" selection-end-line="494" selection-end-column="44" />
               <folding>
                 <element signature="e#115#134#0" expanded="true" />
               </folding>
@@ -35,11 +25,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tools.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="381">
-              <caret line="145" column="37" lean-forward="true" selection-start-line="145" selection-start-column="37" selection-end-line="145" selection-end-column="37" />
+            <state relative-caret-position="85">
+              <caret line="5" selection-start-line="5" selection-end-line="5" />
               <folding>
                 <element signature="e#43#62#0" expanded="true" />
               </folding>
@@ -178,13 +168,13 @@
         <option value="$PROJECT_DIR$/database.py" />
         <option value="$PROJECT_DIR$/test.py" />
         <option value="$PROJECT_DIR$/test2.py" />
-        <option value="$PROJECT_DIR$/fontus.py" />
         <option value="$PROJECT_DIR$/app.py" />
         <option value="$PROJECT_DIR$/tools.py" />
+        <option value="$PROJECT_DIR$/fontus.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds">
+  <component name="ProjectFrameBounds" extendedState="1">
     <option name="x" value="117" />
     <option name="width" value="1551" />
     <option name="height" value="974" />
@@ -242,7 +232,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="117" y="0" width="1551" height="974" extended-state="0" />
+    <frame x="117" y="0" width="1551" height="974" extended-state="1" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" weight="0.08115359" />
@@ -369,22 +359,22 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/fontus.py">
+    <entry file="file://$PROJECT_DIR$/tools.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="156">
-          <caret line="1092" column="36" selection-start-line="1092" selection-start-column="36" selection-end-line="1092" selection-end-column="36" />
+        <state relative-caret-position="85">
+          <caret line="5" selection-start-line="5" selection-end-line="5" />
           <folding>
-            <element signature="e#115#134#0" expanded="true" />
+            <element signature="e#43#62#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tools.py">
+    <entry file="file://$PROJECT_DIR$/fontus.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="381">
-          <caret line="145" column="37" lean-forward="true" selection-start-line="145" selection-start-column="37" selection-end-line="145" selection-end-column="37" />
+        <state relative-caret-position="269">
+          <caret line="494" column="44" lean-forward="true" selection-start-line="494" selection-start-column="44" selection-end-line="494" selection-end-column="44" />
           <folding>
-            <element signature="e#43#62#0" expanded="true" />
+            <element signature="e#115#134#0" expanded="true" />
           </folding>
         </state>
       </provider>
